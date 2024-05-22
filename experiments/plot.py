@@ -33,6 +33,8 @@ def plot(test_data, config):
     '''legs = HiPPO_LegS(N, T)
     f_legs = legs.reconstruct(legs(f))[-1]'''
 
+    print(abs(f-f_legt))
+
     print(F.mse_loss(f[1::], f_legt[0:-1]))
     #print(F.mse_loss(f, f_legs))
 

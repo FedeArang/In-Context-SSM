@@ -62,6 +62,9 @@ class HiPPO_LegT(nn.Module):
         self.register_buffer('A', torch.Tensor(A)) # (N, N)
         self.register_buffer('B', torch.Tensor(B)) # (N,)
 
+        self.C_discr = 1/(1-0.5*self.D*self.dt)*0.5*dt*self.C
+        self.D_discr = 1/(1-0.5*self.D*self.dt)*(1+0.5*dt*self.D)
+
         # vals = np.linspace(0.0, 1.0, 1./dt)
         vals = np.arange(0.0, 1.0, dt)
         self.eval_matrix = torch.Tensor(ss.eval_legendre(np.arange(N)[:, None], 1 - 2 * vals).T)
@@ -83,10 +86,10 @@ class HiPPO_LegT(nn.Module):
             c = F.linear(c, self.A) + self.B * f
 
             if len(cs)==0:
-                pred = 1/(1-0.5*self.D*self.dt)*((1+0.5*self.D*self.dt)*f+torch.dot(c, self.C))
+                pred = torch.dot(c, self.C_discr)+self.D_discr*f
             else:
-                pred = 1/(1-0.5*self.D*self.dt)*((1+0.5*self.D*self.dt)*f+0.5*self.dt*torch.dot((c+torch.Tensor(cs[-1])), self.C))
-
+                #pred = 1/(1-0.5*self.D*self.dt)*((1+0.5*self.D*self.dt)*f+0.5*self.dt*torch.dot((c+torch.Tensor(cs[-1])), self.C))
+                pred = torch.dot(2*c, self.C_discr)+self.D_discr*f
             cs.append(c)
             next_step_pred.append(pred)
         
