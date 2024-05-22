@@ -7,10 +7,10 @@ from scipy import signal
 from scipy import linalg as la
 from functools import partial
 
-from model.rnncell import RNNCell
-from model.orthogonalcell import OrthogonalLinear
-from model.components import Gate, Linear_, Modrelu, get_activation, get_initializer
-from model.op import LegSAdaptiveTransitionManual, LegTAdaptiveTransitionManual, LagTAdaptiveTransitionManual, TLagTAdaptiveTransitionManual
+from rnncell import RNNCell
+from orthogonalcell import OrthogonalLinear
+from components import Gate, Linear_, Modrelu, get_activation, get_initializer
+from op import LegSAdaptiveTransitionManual, LegTAdaptiveTransitionManual, LagTAdaptiveTransitionManual, TLagTAdaptiveTransitionManual
 
 
 

@@ -3,8 +3,8 @@ import torch.nn as nn
 from torch.nn import functional as F
 import numpy as np
 
-from model.memory import LTICell, LSICell
-from model.op import transition
+from memory import LTICell, LSICell
+from op import transition
 
 
 class OPLTICell(LTICell):

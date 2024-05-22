@@ -2,7 +2,7 @@ from functools import partial
 import torch
 import torch.nn as nn
 
-from model.exprnn.orthogonal import modrelu
+from exprnn.orthogonal import modrelu
 
 def get_activation(activation, size):
     if activation == 'id':

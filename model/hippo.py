@@ -1,16 +1,16 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.utils.data as data
 import numpy as np
-import matplotlib.pyplot as plt
 from scipy import signal
 from scipy import linalg as la
 from scipy import special as ss
-import nengo
 
-from model import unroll
-from model.op import transition
+import os
+os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
+import sys
+sys.path.append('C:/Users/faran/Documents_nuova/Documenti/Federico/ETH/in context learning/Git_Hub/In-Context-SSM/model/')
+from op import transition
 
 
 """
@@ -37,14 +37,28 @@ class HiPPO_LegT(nn.Module):
         """
         super().__init__()
         self.N = N
-        A, B = transition('lmu', N)
-        C = np.ones((1, N))
-        D = np.zeros((1,))
+        self.dt = dt
+        A, B = transition('legt', N)
+        #C = np.ones((1, N))
+        #D = np.zeros((1,))
+
+        Q = np.arange(N, dtype=np.float64)
+        evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
+        evals = np.reshape(evals, (self.N, ))
+        #evals = ss.eval_legendre(np.arange(N), 1)*(-1)**Q
+
+        C = np.dot(evals, A)
+        D = np.sum(evals*B.squeeze(-1))
+
+        self.C = torch.Tensor(np.reshape(C, (N, )))
+        self.D = torch.Tensor(np.reshape(D, (1,)))
+
+
         # dt, discretization options
         A, B, _, _, _ = signal.cont2discrete((A, B, C, D), dt=dt, method=discretization)
 
         B = B.squeeze(-1)
-
+    
         self.register_buffer('A', torch.Tensor(A)) # (N, N)
         self.register_buffer('B', torch.Tensor(B)) # (N,)
 
@@ -63,17 +77,28 @@ class HiPPO_LegT(nn.Module):
 
         c = torch.zeros(u.shape[1:])
         cs = []
+        next_step_pred = []
+    
         for f in inputs:
             c = F.linear(c, self.A) + self.B * f
+
+            if len(cs)==0:
+                pred = 1/(1-0.5*self.D*self.dt)*((1+0.5*self.D*self.dt)*f+torch.dot(c, self.C))
+            else:
+                pred = 1/(1-0.5*self.D*self.dt)*((1+0.5*self.D*self.dt)*f+0.5*self.dt*torch.dot((c+torch.Tensor(cs[-1])), self.C))
+
             cs.append(c)
-        return torch.stack(cs, dim=0)
+            next_step_pred.append(pred)
+        
+        return torch.stack(next_step_pred, dim=0)
+        #return torch.stack(cs, dim=0)
 
     def reconstruct(self, c):
         return (self.eval_matrix @ c.unsqueeze(-1)).squeeze(-1)
 
 
 
-class HiPPO_LegS(nn.Module):
+'''class HiPPO_LegS(nn.Module):
     """ Vanilla HiPPO-LegS model (scale invariant instead of time invariant) """
     def __init__(self, N, max_length=1024, measure='legs', discretization='bilinear'):
         """
@@ -128,79 +153,4 @@ class HiPPO_LegS(nn.Module):
 
     def reconstruct(self, c):
         a = self.eval_matrix @ c.unsqueeze(-1)
-        return a.squeeze(-1)
-
-
-class FunctionApprox(data.TensorDataset):
-
-    def __init__(self, length, dt, nbatches, freq=10.0, seed=0):
-        rng = np.random.RandomState(seed=seed)
-        process = nengo.processes.WhiteSignal(length * dt, high=freq, y0=0)
-        X = np.empty((nbatches, length, 1))
-        for i in range(nbatches):
-            X[i, :] = process.run_steps(length, dt=dt, rng=rng)
-            # X[i, :] /= np.max(np.abs(X[i, :]))
-        X = torch.Tensor(X)
-        super().__init__(X, X)
-
-
-def test():
-    N = 256
-    L = 128
-    hippo = HiPPO_LegT(N, dt=1./L)
-
-    x = torch.randn(L, 1)
-
-    y = hippo(x)
-    print(y.shape)
-    z = hippo.reconstruct(y)
-    print(z.shape)
-
-    # mse = torch.mean((z[-1,0,:L].flip(-1) - x.squeeze(-1))**2)
-    mse = torch.mean((z[-1,0,:L] - x.squeeze(-1))**2)
-    print(mse)
-
-    # print(y.shape)
-    hippo_legs = HiPPO_LegS(N, max_length=L)
-    y = hippo_legs(x)
-    # print(y.shape)
-    z = hippo_legs(x, fast=True)
-    print(hippo_legs.reconstruct(z).shape)
-    # print(y-z)
-
-
-def plot():
-    T = 10000
-    dt = 1e-3
-    N = 256
-    nbatches = 10
-    train = FunctionApprox(T, dt, nbatches, freq=1.0, seed=0)
-    test = FunctionApprox(T, dt, nbatches, freq=1.0, seed=1)
-    test_loader = torch.utils.data.DataLoader(test, batch_size=1, shuffle=False)
-    it = iter(test_loader)
-    f, _ = next(it)
-    f, _ = next(it)
-    f = f.squeeze(0).squeeze(-1)
-
-    legt = HiPPO_LegT(N, 1./T)
-    f_legt = legt.reconstruct(legt(f))[-1]
-    legs = HiPPO_LegS(N, T)
-    f_legs = legs.reconstruct(legs(f))[-1]
-    print(F.mse_loss(f, f_legt))
-    print(F.mse_loss(f, f_legs))
-
-    vals = np.linspace(0.0, 1.0, T)
-    plt.figure(figsize=(6, 2))
-    plt.plot(vals, f+0.1, 'k', linewidth=1.0)
-    plt.plot(vals[:T//1], f_legt[:T//1])
-    plt.plot(vals[:T//1], f_legs[:T//1])
-    plt.xlabel('Time (normalized)', labelpad=-10)
-    plt.xticks([0, 1])
-    plt.legend(['f', 'legt', 'legs'])
-    plt.savefig(f'function_approx_whitenoise.pdf', bbox_inches='tight')
-    # plt.show()
-    plt.close()
-
-
-if __name__ == '__main__':
-    plot()
+        return a.squeeze(-1)'''

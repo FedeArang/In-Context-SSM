@@ -2,10 +2,10 @@ import torch
 import torch.nn as nn
 from functools import partial
 
-from model.rnn import RNN, RNNWrapper, LSTMWrapper
-from model import rnncell, opcell # TODO: this is just to force cell_registry to update. There is probably a better programming pattern for this
-from model.rnncell import CellBase
-from model.orthogonalcell import OrthogonalCell
+from rnn import RNN, RNNWrapper, LSTMWrapper
+import rnncell, opcell # TODO: this is just to force cell_registry to update. There is probably a better programming pattern for this
+from rnncell import CellBase
+from orthogonalcell import OrthogonalCell
 
 class Model(nn.Module):
 

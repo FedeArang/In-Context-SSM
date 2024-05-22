@@ -1,11 +1,11 @@
 import torch
 import torch.nn as nn
 
-from model.exprnn.orthogonal import Orthogonal
-from model.exprnn.trivializations import expm, cayley_map
-from model.exprnn.initialization import henaff_init_, cayley_init_
+from exprnn.orthogonal import Orthogonal
+from exprnn.trivializations import expm, cayley_map
+from exprnn.initialization import henaff_init_, cayley_init_
 
-from model.components import Modrelu
+from components import Modrelu
 
 param_name_to_param = {'cayley': cayley_map, 'expm': expm}
 init_name_to_init = {'henaff': henaff_init_, 'cayley': cayley_init_}

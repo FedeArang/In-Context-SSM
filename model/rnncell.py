@@ -4,8 +4,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 
-from model.components import Gate, Linear_, Modrelu, get_activation, get_initializer
-from model.orthogonalcell import OrthogonalLinear
+from components import Gate, Linear_, Modrelu, get_activation, get_initializer
+from orthogonalcell import OrthogonalLinear
 
 
 class CellBase(nn.Module):
