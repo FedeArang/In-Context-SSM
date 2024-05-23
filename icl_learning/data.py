@@ -7,16 +7,16 @@ import random
 
 def get_datasets(config: dict, test: bool):
     if test:
-        if config["test"]["dataset"] == "PolyDataset":
+        if config["test"]["data"]["dataset"] == "PolyDataset":
             return PolyDataset(degree=config["test"]["data"]["degree"], num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
-        elif config["test"]["dataset"] == "WhiteSignalDataset":
+        elif config["test"]["data"]["dataset"] == "WhiteSignalDataset":
             return WhiteSignalDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
         else:
             raise ValueError("Unknown dataset")
     else:
-        if config["train"]["dataset"] == "PolyDataset":
+        if config["train"]["data"]["dataset"] == "PolyDataset":
             return PolyDataset(degree=config["train"]["data"]["degree"], num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
-        elif config["data"]["dataset"] == "WhiteSignalDataset":
+        elif config["train"]["data"]["dataset"] == "WhiteSignalDataset":
             return WhiteSignalDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
         else:
             raise ValueError("Unknown dataset")
@@ -75,6 +75,6 @@ class WhiteSignalDataset(Dataset):
         process = nengo.processes.WhiteSignal(0.1, high=high, y0=y0)
 
         y = process.run_steps(self.num_points, rng=self.rng)
-        self.TRAINSEED+=1 ## TODO this is a dirty hack
+        self.TRAINSEED+=1 # TODO this is a dirty hack
 
         return torch.tensor(y).reshape(-1).to(self.device)

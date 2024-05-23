@@ -64,7 +64,7 @@ def test(config, dataloader, model):
     x = dataloader.dataset.x
     with torch.no_grad():
         total_loss = 0
-        for i, (roots, y) in enumerate(dataloader):
+        for i, y in enumerate(dataloader):
             y_hat = model(y)
             loss = torch.nn.MSELoss()(y_hat[:,1:], y[:,:-1])
             total_loss += loss.item()
@@ -89,7 +89,7 @@ def test(config, dataloader, model):
 def train(config):
     dataset = get_datasets(config=config, test=False)
     dataset_test = get_datasets(config=config, test=True)
-    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True)
+    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True)
 
     dataloader_train = DataLoader(dataset, batch_size=config["train"]["batch_size"], shuffle=True)
     dataloader_test = DataLoader(dataset_test, batch_size=config["train"]["batch_size"], shuffle=False)
@@ -106,7 +106,7 @@ def train(config):
 
     for epoch in range(config["train"]["epochs"]):
         epoch_loss = 0
-        for i, (roots, y) in enumerate(dataloader_train):
+        for i, (_,y) in enumerate(dataloader_train):
             opt.zero_grad()
             y_hat = model(y)
             loss = torch.nn.MSELoss()(y_hat[:,1:].flatten(), y[:,:-1].flatten())

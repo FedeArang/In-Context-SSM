@@ -10,7 +10,7 @@ train:
   teacher_ratio: 1.0
   save_every: 100
   data:
-    dataset: "WhiteSignalDataset"
+    dataset: "PolyDataset"
     degree: 10
     num_functions: 1000
     num_points: 1000
