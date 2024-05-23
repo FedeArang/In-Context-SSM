@@ -43,8 +43,8 @@ class HiPPO_LegT(nn.Module):
         if trainable:
             C = np.ones((N,))
             D = np.zeros((1,))
-            self.C_discr = torch.Tensor(C)
-            self.D_discr = torch.Tensor(D)
+            self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
+            self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
 
         else:
             Q = np.arange(N, dtype=np.float64)

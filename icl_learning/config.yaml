@@ -1,10 +1,17 @@
 data:
-  degree: 100
-  num_functions: 100
-  num_points: 100
+  degree: 10
+  num_functions: 1000
+  num_points: 1000
 
 train:
-  learning_rate: 0.001
+  batch_size: 32
+  epochs: 1000
+  eval_every: 10
+  device: "cuda"
+
+optimizer:
+  type: "adam"
+  lr: 0.01
 
 model:
   rank: 10
