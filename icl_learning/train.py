@@ -1,5 +1,5 @@
 import torch
-from .data import PolyDataset
+from .data import PolyDataset, WhiteSignalDataset, get_datasets
 from model.hippo import HiPPO_LegT
 import yaml
 import torch
@@ -8,6 +8,7 @@ from .optimizer import select_optim
 import wandb
 from matplotlib import pyplot as plt
 from .config import load_configs
+
 
 def autoregressive(func):
     def wrapper(config, dataloader, model, *args, **kwargs):
@@ -38,6 +39,7 @@ def get_weight_dist(model: HiPPO_LegT):
 
     return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D,"dist_2_C": dist_2_C,"dist_2_D": dist_2_D,"dist_inf_C": dist_inf_C,"dist_inf_D": dist_inf_D}
 
+
 def save_checkpoint(config, model, epoch, opt, loss):
     # make dir time
     path = f"{config['save_dir']}/checkpoint_{epoch}.pt"
@@ -49,12 +51,12 @@ def save_checkpoint(config, model, epoch, opt, loss):
             }, path)
     return path
 
+
 def load_checkpoint(config, model, opt):
     checkpoint = torch.load(config["checkpoint_path"])
     model.load_state_dict(checkpoint['model_state_dict']) 
     opt.load_state_dict(checkpoint['optimizer_state_dict'])
     
-
 
 @autoregressive
 def test(config, dataloader, model):
@@ -84,11 +86,9 @@ def test(config, dataloader, model):
     model.train()
 
 
-
 def train(config):
-
-    dataset = PolyDataset(degree=config["data"]["degree"], num_points=config["data"]["num_points"], num_functions=config["data"]["num_functions"], device=config["device"])
-    dataset_test = PolyDataset(test=True, degree=config["data"]["degree"], num_points=config["data"]["num_points"], num_functions=config["data"]["num_functions"], device=config["device"])
+    dataset = get_datasets(config=config, test=False)
+    dataset_test = get_datasets(config=config, test=True)
     model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True)
 
     dataloader_train = DataLoader(dataset, batch_size=config["train"]["batch_size"], shuffle=True)
@@ -118,7 +118,7 @@ def train(config):
         wandb.log({"loss": epoch_loss})
 
         if epoch % config["train"]["eval_every"] == 0:
-            test(config, dataloader_train, model)
+            test(config, dataloader_test, model)
 
         if epoch % config["train"]["save_every"] == 0:
             save_checkpoint(config, model, epoch, opt, epoch_loss)
