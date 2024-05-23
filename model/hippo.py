@@ -30,7 +30,7 @@ Each method comprises an exact recurrence c_k = A_k c_{k-1} + B_k f_k, and an ex
 """
 
 class HiPPO_LegT(nn.Module):
-    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False):
+    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False, teacher_ratio: float = 1.0, device: str = "cpu"):
         """
         N: the order of the HiPPO projection
         dt: discretization step size - should be roughly inverse to the length of the sequence
@@ -38,6 +38,7 @@ class HiPPO_LegT(nn.Module):
         super().__init__()
         self.N = N
         self.dt = dt
+        self.teacher_ratio = teacher_ratio
         A, B = transition('legt', N)
 
         if trainable:
@@ -88,20 +89,27 @@ class HiPPO_LegT(nn.Module):
         c = torch.zeros((u.shape[0], u.shape[-1]))
 
         cs = []
-        next_step_pred = []
+        next_step_pred = torch.zeros_like(inputs)
     
-        for i in range(inputs.shape[1]):
+        steps_teacherforcing = range(int(inputs.shape[1] * self.teacher_ratio))
+        steps_autoregressive = range(len(steps_teacherforcing),inputs.shape[1], 1)
+        for i in steps_teacherforcing:
             c = F.linear(c, self.A) + self.B * inputs[:,i,:]
             if len(cs)==0:
                 pred = (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             else:
                 pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             cs.append(c)
-            next_step_pred.append(pred)
+            next_step_pred[:,i,:]=pred
+
+        for i in steps_autoregressive:
+            c = F.linear(c, self.A) + self.B * next_step_pred[:,i-1,:]
+            pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[:,i,:]
+            cs.append(c)
+            next_step_pred[:,i,:]=pred
         
-        
-        return torch.stack(next_step_pred, dim=1).squeeze(-1)
-        #return torch.stack(cs, dim=0)
+        return next_step_pred.view(inputs.shape[0],inputs.shape[1])
+    
 
     def reconstruct(self, c):
         return (self.eval_matrix @ c.unsqueeze(-1)).squeeze(-1)
