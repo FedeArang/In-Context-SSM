@@ -3,11 +3,11 @@ import torch
 import numpy as np
 
 class PolyDataset(Dataset):
-    def __init__(self, degree: int, num_points: int, num_functions: int, num_samples: int = 1):
+    def __init__(self, degree: int, num_points: int, num_functions: int, device: str = "cpu"):
         self.degree = degree # max degree of each sampled polynomial
         self.num_points = num_points # nr of points to sample from each polynomial as the context length
         self.num_functions = num_functions # nr of plolynomials to use, these will be random at each new step
-        # self.num_samples = num_samples # nr of samples to generate for each function
+        self.device = device
         self.x = torch.linspace(0, 1, num_points)
 
     def __len__(self):
@@ -26,7 +26,7 @@ class PolyDataset(Dataset):
 
         # numpy get random polynomial
         y = self._polynomial(roots, self.x)
-        return roots.reshape(-1), torch.tensor(y).reshape(-1)
+        return roots.reshape(-1).to(self.device), torch.tensor(y).reshape(-1).to(self.device)
     
     def _polynomial(self, roots, x):
         coeff = np.poly(roots)

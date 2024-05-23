@@ -1,3 +1,5 @@
+device: "cpu"
+
 data:
   degree: 10
   num_functions: 1000
@@ -7,7 +9,7 @@ train:
   batch_size: 32
   epochs: 1000
   eval_every: 10
-  device: "cuda"
+
 
 optimizer:
   type: "adam"
@@ -15,3 +17,7 @@ optimizer:
 
 model:
   rank: 10
+
+test:
+  num_plots: 10
+  context_length: 500
