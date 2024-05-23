@@ -10,7 +10,7 @@ import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
 import sys
 sys.path.append('C:/Users/faran/Documents_nuova/Documenti/Federico/ETH/in context learning/Git_Hub/In-Context-SSM/model/')
-from op import transition
+from model.op import transition
 
 
 """
@@ -30,7 +30,7 @@ Each method comprises an exact recurrence c_k = A_k c_{k-1} + B_k f_k, and an ex
 """
 
 class HiPPO_LegT(nn.Module):
-    def __init__(self, N, dt=1.0, discretization='bilinear'):
+    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False):
         """
         N: the order of the HiPPO projection
         dt: discretization step size - should be roughly inverse to the length of the sequence
@@ -39,19 +39,26 @@ class HiPPO_LegT(nn.Module):
         self.N = N
         self.dt = dt
         A, B = transition('legt', N)
-        #C = np.ones((1, N))
-        #D = np.zeros((1,))
 
-        Q = np.arange(N, dtype=np.float64)
-        evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
-        evals = np.reshape(evals, (self.N, ))
-        #evals = ss.eval_legendre(np.arange(N), 1)*(-1)**Q
+        if trainable:
+            C = np.ones((N,))
+            D = np.zeros((1,))
+            self.C_discr = torch.Tensor(C)
+            self.D_discr = torch.Tensor(D)
 
-        C = np.dot(evals, A)
-        D = np.sum(evals*B.squeeze(-1))
+        else:
+            Q = np.arange(N, dtype=np.float64)
+            evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
+            evals = np.reshape(evals, (self.N, ))
 
-        self.C = torch.Tensor(np.reshape(C, (N, )))
-        self.D = torch.Tensor(np.reshape(D, (1,)))
+            C = np.dot(evals, A)
+            D = np.sum(evals*B.squeeze(-1)).reshape(1,)
+
+            self.C = torch.Tensor(np.reshape(C, (N, )))
+            self.D = torch.Tensor(np.reshape(D, (1,)))
+
+            self.C_discr = 1/(1-0.5*self.D*self.dt)*0.5*dt*self.C
+            self.D_discr = 1/(1-0.5*self.D*self.dt)*(1+0.5*dt*self.D)
 
 
         # dt, discretization options
@@ -62,42 +69,44 @@ class HiPPO_LegT(nn.Module):
         self.register_buffer('A', torch.Tensor(A)) # (N, N)
         self.register_buffer('B', torch.Tensor(B)) # (N,)
 
-        self.C_discr = 1/(1-0.5*self.D*self.dt)*0.5*dt*self.C
-        self.D_discr = 1/(1-0.5*self.D*self.dt)*(1+0.5*dt*self.D)
-
         # vals = np.linspace(0.0, 1.0, 1./dt)
         vals = np.arange(0.0, 1.0, dt)
         self.eval_matrix = torch.Tensor(ss.eval_legendre(np.arange(N)[:, None], 1 - 2 * vals).T)
 
     def forward(self, inputs):
         """
-        inputs : (length, ...)
-        output : (length, ..., N) where N is the order of the HiPPO projection
+        inputs : (batch size, length)
+        output : (batch size, length) where N is the order of the HiPPO projection
         """
-
+        if len(inputs.shape) == 1:
+            #then batch size is one and we unsqueeze
+            inputs = inputs.unsqueeze(0)
+            
         inputs = inputs.unsqueeze(-1)
         u = inputs * self.B # (length, ..., N)
 
-        c = torch.zeros(u.shape[1:])
+        c = torch.zeros((u.shape[0], u.shape[-1]))
+
         cs = []
         next_step_pred = []
     
-        for f in inputs:
-            c = F.linear(c, self.A) + self.B * f
-
+        for i in range(inputs.shape[1]):
+            c = F.linear(c, self.A) + self.B * inputs[:,i,:]
             if len(cs)==0:
-                pred = torch.dot(c, self.C_discr)+self.D_discr*f
+                pred = (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             else:
-                #pred = 1/(1-0.5*self.D*self.dt)*((1+0.5*self.D*self.dt)*f+0.5*self.dt*torch.dot((c+torch.Tensor(cs[-1])), self.C))
-                pred = torch.dot(2*c, self.C_discr)+self.D_discr*f
+                pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             cs.append(c)
             next_step_pred.append(pred)
         
-        return torch.stack(next_step_pred, dim=0)
+        
+        return torch.stack(next_step_pred, dim=1).squeeze(-1)
         #return torch.stack(cs, dim=0)
 
     def reconstruct(self, c):
         return (self.eval_matrix @ c.unsqueeze(-1)).squeeze(-1)
+
+
 
 
 
