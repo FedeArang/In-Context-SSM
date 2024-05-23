@@ -1,6 +1,6 @@
 device: "cpu"
 load_from_checkpoint: False
-checkpoint_path: "checkpoints/2021-06-01T14-00-00/"
+checkpoint_path: "checkpoints/2024_05_23_16_55_56/checkpoint_900.pt"
 save_dir: "checkpoints"
 
 data:
@@ -10,7 +10,7 @@ data:
 
 train:
   batch_size: 64
-  epochs: 1000
+  epochs: 100000
   eval_every: 10
   teacher_ratio: 1.0
   save_every: 100

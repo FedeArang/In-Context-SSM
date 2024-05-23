@@ -9,3 +9,58 @@ wandb: 🚀 View run at https://wandb.ai/khaefeli/incontextssm/runs/91eatmj0
 
 I found a path object that I don't think is part of a bar chart. Ignoring.
 
+wandb: Currently logged in as: khaefeli. Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240523_184418-bj23rskc
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/khaefeli/incontextssm
+wandb: 🚀 View run at https://wandb.ai/khaefeli/incontextssm/runs/bj23rskc
+/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/plotly/matplotlylib/renderer.py:609: UserWarning:
+
+I found a path object that I don't think is part of a bar chart. Ignoring.
+
+Exception in thread Thread-10 (_thread_body):
+Traceback (most recent call last):
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/wandb/filesync/step_checksum.py", line 84, in _thread_body
+    shutil.copy2(req.path, path)
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/shutil.py", line 475, in copy2
+    copyfile(src, dst, follow_symlinks=follow_symlinks)
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/shutil.py", line 273, in copyfile
+    _fastcopy_sendfile(fsrc, fdst)
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/shutil.py", line 164, in _fastcopy_sendfile
+    raise err from None
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/shutil.py", line 150, in _fastcopy_sendfile
+    sent = os.sendfile(outfd, infd, offset, blocksize)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+OSError: [Errno 28] No space left on device: '/home/kilian/In-Context-SSM/wandb/run-20240523_184418-bj23rskc/files/media/plotly/function_0_5791_997999dceb50026f948a.plotly.json' -> '/tmp/tmp3qf7aw27wandb/5wbms30z-media/plotly/function_0_5791_997999dceb50026f948a.plotly.json'
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/threading.py", line 1073, in _bootstrap_inner
+    self.run()
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/threading.py", line 1010, in run
+    self._target(*self._args, **self._kwargs)
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/wandb/filesync/step_checksum.py", line 87, in _thread_body
+    shutil.copy2(req.path, path)
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/shutil.py", line 475, in copy2
+    copyfile(src, dst, follow_symlinks=follow_symlinks)
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/shutil.py", line 283, in copyfile
+    copyfileobj(fsrc, fdst)
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/shutil.py", line 204, in copyfileobj
+    fdst_write(buf)
+OSError: [Errno 28] No space left on device
+Traceback (most recent call last):
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/wandb/sdk/data_types/plotly.py", line 72, in __init__
+    util.json_dump_safer(val, fp)
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/wandb/util.py", line 823, in json_dump_safer
+    return dump(obj, fp, cls=WandBJSONEncoder, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/json/__init__.py", line 180, in dump
+    fp.write(chunk)
+  File "<frozen codecs>", line 727, in write
+  File "<frozen codecs>", line 378, in write
+OSError: [Errno 28] No space left on device
+
+During handling of the above exc
