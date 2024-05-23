@@ -104,7 +104,7 @@ class HiPPO_LegT(nn.Module):
 
         for i in steps_autoregressive:
             c = F.linear(c, self.A) + self.B * next_step_pred[:,i-1,:]
-            pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[:,i,:]
+            pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[:,i-1,:]
             cs.append(c)
             next_step_pred[:,i,:]=pred
         
