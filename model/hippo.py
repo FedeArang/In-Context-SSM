@@ -5,6 +5,7 @@ import numpy as np
 from scipy import signal
 from scipy import linalg as la
 from scipy import special as ss
+import math
 
 import os
 os.environ["KMP_DUPLICATE_LIB_OK"]="TRUE"
@@ -70,6 +71,12 @@ class HiPPO_LegT(nn.Module):
         self.register_buffer('A', torch.Tensor(A)) # (N, N)
         self.register_buffer('B', torch.Tensor(B)) # (N,)
 
+<<<<<<< Updated upstream
+=======
+        self.C_discr = 1/(1-0.5*self.D*self.dt)*0.5*self.dt*self.C
+        self.D_discr = 1/(1-0.5*self.D*self.dt)*(1+0.5*self.dt*self.D)
+
+>>>>>>> Stashed changes
         # vals = np.linspace(0.0, 1.0, 1./dt)
         vals = np.arange(0.0, 1.0, dt)
         self.eval_matrix = torch.Tensor(ss.eval_legendre(np.arange(N)[:, None], 1 - 2 * vals).T)
@@ -116,23 +123,44 @@ class HiPPO_LegT(nn.Module):
 
 
 
+<<<<<<< Updated upstream
 
 
 '''class HiPPO_LegS(nn.Module):
+=======
+class HiPPO_LegS(nn.Module):
+>>>>>>> Stashed changes
     """ Vanilla HiPPO-LegS model (scale invariant instead of time invariant) """
-    def __init__(self, N, max_length=1024, measure='legs', discretization='bilinear'):
+    def __init__(self, N, max_length=1024, measure='legs', discretization='bilinear', dt=1.0):
         """
         max_length: maximum sequence length
         """
         super().__init__()
         self.N = N
+        self.dt = 1
         A, B = transition(measure, N)
         B = B.squeeze(-1)
         A_stacked = np.empty((max_length, N, N), dtype=A.dtype)
         B_stacked = np.empty((max_length, N), dtype=B.dtype)
+        C_stacked = np.empty((max_length, N))
+        D_stacked = np.empty((max_length, 1))
+        C_discr_stacked = np.empty((max_length, N))
+        D_discr_stacked = np.empty((max_length, 1))
+
+        Q = np.arange(N, dtype=np.float64)
+        evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
+        evals = np.reshape(evals, (self.N, ))
+
         for t in range(1, max_length + 1):
             At = A / t
             Bt = B / t
+
+            C_stacked[t-1] = np.dot(evals, At)
+            D_stacked[t-1] = np.sum(evals*Bt)
+            C_discr_stacked[t-1] = 1/(1-0.5*D_stacked[t-1]*self.dt)*0.5*self.dt*C_stacked[t-1]
+            D_discr_stacked[t-1] = 1/(1-0.5*D_stacked[t-1]*self.dt)*(1+0.5*self.dt*D_stacked[t-1])
+
+
             if discretization == 'forward':
                 A_stacked[t - 1] = np.eye(N) + At
                 B_stacked[t - 1] = Bt
@@ -145,14 +173,48 @@ class HiPPO_LegT(nn.Module):
             else: # ZOH
                 A_stacked[t - 1] = la.expm(A * (math.log(t + 1) - math.log(t)))
                 B_stacked[t - 1] = la.solve_triangular(A, A_stacked[t - 1] @ B - B, lower=True)
+        
         self.A_stacked = torch.Tensor(A_stacked) # (max_length, N, N)
         self.B_stacked = torch.Tensor(B_stacked) # (max_length, N)
+        self.C_stacked = torch.Tensor(C_stacked) # (max_length, N, N)
+        self.D_stacked = torch.Tensor(D_stacked)
+        self.C_discr_stacked = torch.Tensor(C_discr_stacked) 
+        self.D_discr_stacked = torch.Tensor(D_discr_stacked)
         # print("B_stacked shape", B_stacked.shape)
 
-        vals = np.linspace(0.0, 1.0, max_length)
-        self.eval_matrix = torch.Tensor((B[:, None] * ss.eval_legendre(np.arange(N)[:, None], 2 * vals - 1)).T)
+        #vals = np.linspace(0.0, 1.0, max_length)
+        #self.eval_matrix = torch.Tensor((B[:, None] * ss.eval_legendre(np.arange(N)[:, None], 2 * vals - 1)).T)
 
-    def forward(self, inputs, fast=False):
+    
+    def forward(self, inputs):
+        """
+        inputs : (length, ...)
+        output : (length, ..., N) where N is the order of the HiPPO projection
+        """
+
+        inputs = inputs.unsqueeze(-1)
+        u = inputs * self.B_stacked[0] # (length, ..., N)
+
+        c = torch.zeros(u.shape[1:])
+        cs = []
+        next_step_pred = []
+    
+        for i in range(len(inputs)):
+            c = F.linear(c, self.A_stacked[i]) + self.B_stacked[i] * inputs[i]
+
+            if len(cs)==0:
+                pred = torch.dot(c, self.C_discr_stacked[i])+self.D_discr_stacked[i]*inputs[i]
+            else:
+                #pred = 1/(1-0.5*self.D*self.dt)*((1+0.5*self.D*self.dt)*f+0.5*self.dt*torch.dot((c+torch.Tensor(cs[-1])), self.C))
+                pred = torch.dot(2*c, self.C_discr_stacked[i])+self.D_discr_stacked[i]*inputs[i]
+            cs.append(c)
+            next_step_pred.append(pred)
+        
+        return torch.stack(next_step_pred, dim=0)
+        #return torch.stack(cs, dim=0)
+
+    
+    '''def forward(self, inputs, fast=False):
         """
         inputs : (length, ...)
         output : (length, ..., N) where N is the order of the HiPPO projection
@@ -169,8 +231,12 @@ class HiPPO_LegT(nn.Module):
             result = unroll.variable_unroll_matrix(self.A_stacked[:L], u)
         else:
             result = unroll.variable_unroll_matrix_sequential(self.A_stacked[:L], u)
-        return result
+        return result'''
 
     def reconstruct(self, c):
         a = self.eval_matrix @ c.unsqueeze(-1)
+<<<<<<< Updated upstream
         return a.squeeze(-1)'''
+=======
+        return a.squeeze(-1)
+>>>>>>> Stashed changes
