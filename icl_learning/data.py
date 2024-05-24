@@ -78,3 +78,32 @@ class WhiteSignalDataset(Dataset):
         self.TRAINSEED+=1 # TODO this is a dirty hack
 
         return torch.tensor(y).reshape(-1).to(self.device)
+    
+
+class BrownianMotionDataset(Dataset):
+    def __init__(self, num_points: int, num_functions: int, mu: float, sigma: float, dt: float, initial_state: float=0.0, device: str = "cpu", test: bool = False):
+        self.num_points = num_points
+        self.num_functions = num_functions
+        self.device = device
+        self.test = test
+        self.mu = mu
+        self.dt = dt
+        self.sigma = sigma
+        self.initial_state = initial_state
+        self.x = torch.linspace(0, 1, num_points)
+
+    def __getitem__(self, index):
+        return self.unroll_brownian_process(index)
+
+    def brownian_update(self, x):
+        return np.random.normal(x+self.mu*self.dt, self.dt*self.sigma**2)
+
+    def unroll_brownian_process(self, config):
+
+        data = np.zeros(self.num_points)
+        data[0]= self.initial_state
+
+        for i in range(self.num_points-1):
+            data[i+1]=self.brownian_update(data[i])
+
+        return torch.Tensor(data)

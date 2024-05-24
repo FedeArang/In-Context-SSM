@@ -14,6 +14,9 @@ train:
     degree: 10
     num_functions: 1000
     num_points: 1000
+    dt: 0.01
+    mu: 1
+    sigma: 5
 
 
 
@@ -33,3 +36,6 @@ test:
     degree: 10
     num_functions: 1000
     num_points: 1000
+    dt: 0.01
+    mu: 1
+    sigma: 5
