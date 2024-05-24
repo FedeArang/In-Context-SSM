@@ -1550,3 +1550,14 @@ wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/pvx47btq
 
 I found a path object that I don't think is part of a bar chart. Ignoring.
 
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240524_125941-8s3oaut6
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/8s3oaut6
+/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/plotly/matplotlylib/renderer.py:609: UserWarning:
+
+I found a path object that I don't think is part of a bar chart. Ignoring.
+

@@ -113,7 +113,6 @@ def train(config):
     opt = select_optim(config, model)
     
     wandb.init(
-
         entity="incontextssm",
         project="incontextssm",
                 config=config,
@@ -128,7 +127,7 @@ def train(config):
         for i, y in enumerate(dataloader_train):
             opt.zero_grad()
             y_hat = model(y)
-            loss = torch.nn.MSELoss()(y_hat[:,1:].flatten(), y[:,:-1].flatten())
+            loss = torch.nn.MSELoss()(y_hat[:,:-1].flatten(), y[:,1:].flatten())
             loss.backward()
             opt.step()
 
