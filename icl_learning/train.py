@@ -76,15 +76,15 @@ def test(config, dataloader, model, test=True):
     with torch.no_grad():
         total_loss = 0
         for i, y in enumerate(dataloader):
-            y_hat = model(y)
+            y_hat = model(y) # Now y is the signal 1,2,3,4,5,N+1, and y is 0,1,2,3,4,5..., N
             loss = torch.nn.MSELoss()(y_hat[:,:-1], y[:,1:])
             total_loss += loss.item()
             # make plots of the predictions and the ground truth and log them to wandb
             if i==0:
                 for j in range(config["test"]["num_plots"]):
                     plt.figure()
-                    plt.plot(x[1:], y_hat[j][1:].numpy(), label="prediction")
-                    plt.plot(x[1:], y[j][:-1].numpy(), label="ground truth")
+                    plt.plot(x[1:], y_hat[j][:-1].numpy(), label="prediction")
+                    plt.plot(x[1:], y[j][1:].numpy(), label="ground truth")
                     plt.legend()
                     plt.title(f"Function {i}")
                     wandb.log({f"function_{i}": plt})
@@ -126,7 +126,7 @@ def train(config):
         epoch_loss = 0
         for i, y in enumerate(dataloader_train):
             opt.zero_grad()
-            y_hat = model(y)
+            y_hat = model(y) # signal y is 0,1,2,3,4,5..., N / y_hat is 1,2,3,4,5,6..., N+1
             loss = torch.nn.MSELoss()(y_hat[:,:-1].flatten(), y[:,1:].flatten())
             loss.backward()
             opt.step()
