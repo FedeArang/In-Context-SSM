@@ -86,7 +86,7 @@ class HiPPO_LegT(nn.Module):
         inputs = inputs.unsqueeze(-1)
         u = inputs * self.B # (length, ..., N)
 
-        c = torch.zeros((u.shape[0], u.shape[-1]))
+        c = torch.zeros((u.shape[0], u.shape[-1])).to(torch.float32)
 
         cs = []
         next_step_pred = torch.zeros_like(inputs)

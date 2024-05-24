@@ -8,6 +8,17 @@ from .optimizer import select_optim
 import wandb
 from matplotlib import pyplot as plt
 from .config import load_configs
+import random
+import numpy as np
+
+def set_seeds(seed):
+    random.seed(seed)
+    np.random.seed(seed)
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)  # if you are using multi-GPU.
+    torch.backends.cudnn.deterministic = True  # Ensure deterministic behavior for cuDNN
+    torch.backends.cudnn.benchmark = False  # Disable the cuDNN auto-tuner to avoid non-deterministic behavior
 
 
 def autoregressive(func):
@@ -96,7 +107,9 @@ def train(config):
     
     opt = select_optim(config, model)
     
-    wandb.init(project="incontextssm",
+    wandb.init(
+        entity="incontextssm",
+        project="incontextssm",
                 config=config,
                 name="HiPPO_LegT")
     wandb.watch(model)
@@ -106,7 +119,7 @@ def train(config):
 
     for epoch in range(config["train"]["epochs"]):
         epoch_loss = 0
-        for i, (_,y) in enumerate(dataloader_train):
+        for i, y in enumerate(dataloader_train):
             opt.zero_grad()
             y_hat = model(y)
             loss = torch.nn.MSELoss()(y_hat[:,1:].flatten(), y[:,:-1].flatten())
@@ -125,9 +138,12 @@ def train(config):
 
 
 if __name__=="__main__":
-    # import config
-    config = load_configs()
-    train(config)
+    for i in range(5):
+        seed = 42 + i
+        set_seeds(42)
+        config = load_configs()
+        config["seed"] = seed
+        train(config)
     
             
         
