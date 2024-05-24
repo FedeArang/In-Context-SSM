@@ -1561,3 +1561,4 @@ wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/8s3oaut6
 
 I found a path object that I don't think is part of a bar chart. Ignoring.
 
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin

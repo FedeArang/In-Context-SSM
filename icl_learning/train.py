@@ -77,7 +77,7 @@ def test(config, dataloader, model, test=True):
         total_loss = 0
         for i, y in enumerate(dataloader):
             y_hat = model(y)
-            loss = torch.nn.MSELoss()(y_hat[:,1:], y[:,:-1])
+            loss = torch.nn.MSELoss()(y_hat[:,:-1], y[:,1:])
             total_loss += loss.item()
             # make plots of the predictions and the ground truth and log them to wandb
             if i==0:
