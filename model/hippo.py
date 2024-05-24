@@ -71,12 +71,6 @@ class HiPPO_LegT(nn.Module):
         self.register_buffer('A', torch.Tensor(A)) # (N, N)
         self.register_buffer('B', torch.Tensor(B)) # (N,)
 
-<<<<<<< Updated upstream
-=======
-        self.C_discr = 1/(1-0.5*self.D*self.dt)*0.5*self.dt*self.C
-        self.D_discr = 1/(1-0.5*self.D*self.dt)*(1+0.5*self.dt*self.D)
-
->>>>>>> Stashed changes
         # vals = np.linspace(0.0, 1.0, 1./dt)
         vals = np.arange(0.0, 1.0, dt)
         self.eval_matrix = torch.Tensor(ss.eval_legendre(np.arange(N)[:, None], 1 - 2 * vals).T)
@@ -123,13 +117,7 @@ class HiPPO_LegT(nn.Module):
 
 
 
-<<<<<<< Updated upstream
-
-
-'''class HiPPO_LegS(nn.Module):
-=======
 class HiPPO_LegS(nn.Module):
->>>>>>> Stashed changes
     """ Vanilla HiPPO-LegS model (scale invariant instead of time invariant) """
     def __init__(self, N, max_length=1024, measure='legs', discretization='bilinear', dt=1.0):
         """
@@ -235,8 +223,4 @@ class HiPPO_LegS(nn.Module):
 
     def reconstruct(self, c):
         a = self.eval_matrix @ c.unsqueeze(-1)
-<<<<<<< Updated upstream
-        return a.squeeze(-1)'''
-=======
         return a.squeeze(-1)
->>>>>>> Stashed changes
