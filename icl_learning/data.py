@@ -11,6 +11,8 @@ def get_datasets(config: dict, test: bool):
             return PolyDataset(degree=config["test"]["data"]["degree"], num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
         elif config["test"]["data"]["dataset"] == "WhiteSignalDataset":
             return WhiteSignalDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
+        elif config["test"]["data"]["dataset"] == "BrownianMotionDataset":
+            return BrownianMotionDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], mu=config["test"]["data"]["mu"], sigma=config["test"]["data"]["sigma"], dt=config["test"]["data"]["dt"], device=config["device"], test=True)
         else:
             raise ValueError("Unknown dataset")
     else:
@@ -18,6 +20,8 @@ def get_datasets(config: dict, test: bool):
             return PolyDataset(degree=config["train"]["data"]["degree"], num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
         elif config["train"]["data"]["dataset"] == "WhiteSignalDataset":
             return WhiteSignalDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
+        elif config["train"]["data"]["dataset"] == "BrownianMotionDataset":
+            return BrownianMotionDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], mu=config["train"]["data"]["mu"], sigma=config["train"]["data"]["sigma"], dt=config["train"]["data"]["dt"], device=config["device"])
         else:
             raise ValueError("Unknown dataset")
         
@@ -93,6 +97,9 @@ class BrownianMotionDataset(Dataset):
         self.initial_state = initial_state
         self.x = torch.linspace(0, 1, num_points)
 
+    def __len__(self):
+        return self.num_functions
+    
     def __getitem__(self, index):
         return self.unroll_brownian_process(index)
 

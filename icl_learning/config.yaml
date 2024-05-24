@@ -1,14 +1,14 @@
 device: "cpu"
 load_from_checkpoint: False
-checkpoint_path: "checkpoints/2024_05_23_16_55_56/checkpoint_900.pt"
+checkpoint_path: "checkpoints/2024_05_24_11_44_42/checkpoint_200.pt"
 save_dir: "checkpoints"
 
 train:
   batch_size: 64
-  epochs: 3000
+  epochs: 1500
   eval_every: 10
   teacher_ratio: 1.0
-  save_every: 100
+  save_every: 10
   data:
     dataset: "WhiteSignalDataset"
     degree: 10
@@ -26,14 +26,14 @@ optimizer:
   lr: 0.003
 
 model:
-  rank: 32
+  rank: 16
 
 test:
   num_plots: 10
   context_length: 1000
-  teacher_ratio: 1.0
+  teacher_ratio: 0.9
   data:
-    dataset: "WhiteSignalDataset"
+    dataset: "BrownianMotionDataset"
     degree: 10
     num_functions: 1000
     num_points: 1000

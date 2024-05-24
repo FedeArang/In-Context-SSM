@@ -70,7 +70,7 @@ def load_checkpoint(config, model, opt):
     
 
 @autoregressive
-def test(config, dataloader, model):
+def test(config, dataloader, model, test=True):
     model.eval()
     x = dataloader.dataset.x
     with torch.no_grad():
@@ -92,7 +92,10 @@ def test(config, dataloader, model):
         # evaluate weight distane of D,C to the learned ones
         weight_dist = get_weight_dist(model)
         wandb.log(weight_dist)
-        wandb.log({"test_loss": total_loss})
+        if test:
+            wandb.log({"test_loss": total_loss})
+        else:
+            wandb.log({"test_loss": total_loss})
 
     model.train()
 
@@ -100,6 +103,8 @@ def test(config, dataloader, model):
 def train(config):
     dataset = get_datasets(config=config, test=False)
     dataset_test = get_datasets(config=config, test=True)
+
+    
     model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True)
 
     dataloader_train = DataLoader(dataset, batch_size=config["train"]["batch_size"], shuffle=True)
@@ -108,6 +113,7 @@ def train(config):
     opt = select_optim(config, model)
     
     wandb.init(
+
         entity="incontextssm",
         project="incontextssm",
                 config=config,
@@ -132,6 +138,7 @@ def train(config):
 
         if epoch % config["train"]["eval_every"] == 0:
             test(config, dataloader_test, model)
+            test(config, dataloader_train, model, test=False)
 
         if epoch % config["train"]["save_every"] == 0:
             save_checkpoint(config, model, epoch, opt, epoch_loss)
