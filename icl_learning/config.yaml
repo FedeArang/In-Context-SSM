@@ -5,12 +5,12 @@ save_dir: "checkpoints"
 
 train:
   batch_size: 64
-  epochs: 100000
+  epochs: 3000
   eval_every: 10
   teacher_ratio: 1.0
   save_every: 100
   data:
-    dataset: "PolyDataset"
+    dataset: "WhiteSignalDataset"
     degree: 10
     num_functions: 1000
     num_points: 1000
@@ -22,7 +22,7 @@ optimizer:
   lr: 0.003
 
 model:
-  rank: 10
+  rank: 32
 
 test:
   num_plots: 10

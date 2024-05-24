@@ -45,7 +45,7 @@ class PolyDataset(Dataset):
 
         # numpy get random polynomial
         y = self._polynomial(roots, self.x)
-        return roots.reshape(-1).to(self.device), torch.tensor(y).reshape(-1).to(self.device)
+        return torch.tensor(y).reshape(-1).to(self.device)
     
     def _polynomial(self, roots, x):
         coeff = np.poly(roots)
@@ -74,7 +74,7 @@ class WhiteSignalDataset(Dataset):
         y0 = random.uniform(-1, 1)
         process = nengo.processes.WhiteSignal(0.1, high=high, y0=y0)
 
-        y = process.run_steps(self.num_points, rng=self.rng)
+        y = process.run_steps(self.num_points, dt=0.1/self.num_points,rng=self.rng)
         self.TRAINSEED+=1 # TODO this is a dirty hack
 
-        return torch.tensor(y).reshape(-1).to(self.device)
+        return torch.tensor(y).reshape(-1).to(torch.float32).to(self.device)
