@@ -161,6 +161,8 @@ def train(config):
 
 
 if __name__=="__main__":
+    torch.autograd.set_detect_anomaly(True)
+
     for i in range(5):
         seed = 44 + i
         set_seeds(42)

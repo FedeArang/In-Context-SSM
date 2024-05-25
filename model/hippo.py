@@ -108,18 +108,20 @@ class HiPPO_LegT(nn.Module):
         steps_teacherforcing = range(int(inputs.shape[1] * self.teacher_ratio))
         steps_autoregressive = range(len(steps_teacherforcing),inputs.shape[1], 1)
         for i in steps_teacherforcing:
-            c = F.linear(c, self.A) + self.B * inputs[:,i,:]
-            if len(cs)==0:
-                pred = (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+            if i==0:
+                cs.append(self.B * inputs[:,i,:])
             else:
-                pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
-            cs.append(c)
+                cs.append(F.linear(cs[-1], self.A) + self.B * inputs[:,i,:])
+            if len(cs)==0:
+                pred = (cs[-1] @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+            else:
+                pred = (2*cs[-1] @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+            
             next_step_pred[:,i,:]=pred
 
         for i in steps_autoregressive:
-            c = F.linear(c, self.A) + self.B * next_step_pred[:,i-1,:]
-            pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[:,i-1,:]
-            cs.append(c)
+            cs.append(F.linear(cs[-1], self.A) + self.B * next_step_pred[:,i-1,:])
+            pred = (2*cs[-1] @ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[:,i-1,:]
             next_step_pred[:,i,:]=pred
         
         return next_step_pred.view(inputs.shape[0],inputs.shape[1])
