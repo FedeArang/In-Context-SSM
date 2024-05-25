@@ -1615,4 +1615,89 @@ Traceback (most recent call last):
     fdst_write(buf)
 OSError: [Errno 28] No space left on device
 Traceback (most recent call last):
-  File "/home/kilian/miniconda3/envs/vmamba/lib
+  File "/home/kilian/miniconda3/envs/vmamba/libwandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240524_184850-j88jtoak
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/j88jtoak
+/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/plotly/matplotlylib/renderer.py:609: UserWarning:
+
+I found a path object that I don't think is part of a bar chart. Ignoring.
+
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240525_001337-cmdn3u9a
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/cmdn3u9a
+/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/plotly/matplotlylib/renderer.py:609: UserWarning:
+
+I found a path object that I don't think is part of a bar chart. Ignoring.
+
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240525_001856-t8xgxokv
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/t8xgxokv
+/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/plotly/matplotlylib/renderer.py:609: UserWarning:
+
+I found a path object that I don't think is part of a bar chart. Ignoring.
+
+wandb: - 129.858 MB of 129.858 MB uploadedwandb: \ 129.858 MB of 129.883 MB uploadedwandb: | 129.883 MB of 129.883 MB uploadedwandb: / 129.883 MB of 129.883 MB uploadedwandb: 
+wandb: Run history:
+wandb:   dist_1_C ▂▂▁▃▄▅▇█▂▂▁▂▄▅▇█▂▁▁▂▄▆▇█▂▂▁▂▅▆▇█▂▂▁▃▄▆▇█
+wandb:   dist_1_D ▃▅▇█████▁▅▇█████▂▅▇█████▃▅▇█████▃▅▇█████
+wandb:   dist_2_C ▃▂▁▂▃▅▆█▃▂▁▂▄▅▇█▃▂▁▂▄▅▆█▃▂▁▂▄▅▆█▃▂▁▂▃▅▆█
+wandb:   dist_2_D ▃▅▇█████▁▅▇█████▂▅▇█████▃▅▇█████▃▅▇█████
+wandb: dist_inf_C ▁▁▁▂▄▅▇█▁▁▁▁▄▅▇█▁▁▁▁▄▅▇█▁▁▁▂▄▆▇█▁▁▁▂▄▆▇█
+wandb: dist_inf_D ▃▅▇█████▁▅▇█████▂▅▇█████▃▅▇█████▃▅▇█████
+wandb:       loss ▅▂▁▁▁▁▁▁█▂▁▁▁▁▁▁▄▂▁▁▁▁▁▁▃▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁
+wandb:  test_loss ▁▁▁▁▁▁▁▁█▁▁▁▁▁▁▁▂▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁▁
+wandb: 
+wandb: Run summary:
+wandb:   dist_1_C 553.10944
+wandb:   dist_1_D 3.53447
+wandb:   dist_2_C 75.06062
+wandb:   dist_2_D 3.53447
+wandb: dist_inf_C 23.41638
+wandb: dist_inf_D 3.53447
+wandb:       loss 0.00028
+wandb:  test_loss 0.19262
+wandb: 
+wandb: 🚀 View run HiPPO_LegT at: https://wandb.ai/incontextssm/incontextssm/runs/t8xgxokv
+wandb: ⭐️ View project at: https://wandb.ai/incontextssm/incontextssm
+wandb: Synced 6 W&B file(s), 1500 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240525_001856-t8xgxokv/logs
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 152, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 104, in train
+    dataset = get_datasets(config=config, test=False)
+              ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/In-Context-SSM/icl_learning/data.py", line 30, in get_datasets
+    raise ValueError("Unknown dataset")
+ValueError: Unknown dataset
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240525_122733-9cgogr3d
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/9cgogr3d
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  return torch.tensor(sine).to(torch.float32).to(self.device)
+/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/plotly/matplotlylib/renderer.py:609: UserWarning:
+
+I found a path object that I don't think is part of a bar chart. Ignoring.
+
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning:
+
+To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+

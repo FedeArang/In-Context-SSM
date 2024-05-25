@@ -13,6 +13,8 @@ def get_datasets(config: dict, test: bool):
             return WhiteSignalDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
         elif config["test"]["data"]["dataset"] == "BrownianMotionDataset":
             return BrownianMotionDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], mu=config["test"]["data"]["mu"], sigma=config["test"]["data"]["sigma"], dt=config["test"]["data"]["dt"], device=config["device"], test=True)
+        elif config["test"]["data"]["dataset"] == "SineDataset":
+            return SineDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
         else:
             raise ValueError("Unknown dataset")
     else:
@@ -22,6 +24,8 @@ def get_datasets(config: dict, test: bool):
             return WhiteSignalDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
         elif config["train"]["data"]["dataset"] == "BrownianMotionDataset":
             return BrownianMotionDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], mu=config["train"]["data"]["mu"], sigma=config["train"]["data"]["sigma"], dt=config["train"]["data"]["dt"], device=config["device"])
+        elif config["train"]["data"]["dataset"] == "SineDataset":
+            return SineDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
         else:
             raise ValueError("Unknown dataset")
         
@@ -115,3 +119,21 @@ class BrownianMotionDataset(Dataset):
             data[i+1]=self.brownian_update(data[i])
 
         return torch.Tensor(data)
+    
+
+class SineDataset(Dataset):
+    def __init__(self, num_points: int, num_functions: int, device: str = "cpu", test: bool = False):
+        self.num_points = num_points
+        self.num_functions = num_functions
+        self.device = device
+        self.test = test
+        self.x = torch.linspace(0, 1, num_points)
+        self.frequencies = np.random.uniform(0.1, 20, num_functions) 
+
+    def __len__(self):
+        return self.num_functions
+    
+    def __getitem__(self, index):
+        sine = np.sin(self.frequencies[index]*self.x) 
+        return torch.tensor(sine).to(torch.float32).to(self.device)
+        

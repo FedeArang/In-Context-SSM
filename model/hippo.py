@@ -30,7 +30,7 @@ Each method comprises an exact recurrence c_k = A_k c_{k-1} + B_k f_k, and an ex
 """
 
 class HiPPO_LegT(nn.Module):
-    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False, teacher_ratio: float = 1.0, device: str = "cpu"):
+    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False, teacher_ratio: float = 1.0, device: str = "cpu", full: bool = False):
         """
         N: the order of the HiPPO projection
         dt: discretization step size - should be roughly inverse to the length of the sequence
@@ -39,14 +39,15 @@ class HiPPO_LegT(nn.Module):
         self.N = N
         self.dt = dt
         self.teacher_ratio = teacher_ratio
+        self.device = device
+        self.full = full
         A, B = transition('legt', N)
 
-        if trainable:
+        if trainable and full == False:
             C = np.ones((N,))
             D = np.zeros((1,))
             self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
             self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
-
         else:
             Q = np.arange(N, dtype=np.float64)
             evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
@@ -66,9 +67,13 @@ class HiPPO_LegT(nn.Module):
         A, B, _, _, _ = signal.cont2discrete((A, B, C, D), dt=dt, method=discretization)
 
         B = B.squeeze(-1)
+
+        if trainable and full:
+            self.A = torch.nn.Parameter(torch.Tensor(A).requires_grad_())
+            self.B = torch.nn.Parameter(torch.Tensor(B).requires_grad_())
     
-        self.register_buffer('A', torch.Tensor(A)) # (N, N)
-        self.register_buffer('B', torch.Tensor(B)) # (N,)
+        #self.register_buffer('A', torch.Tensor(A)) # (N, N)
+        #self.register_buffer('B', torch.Tensor(B)) # (N,)
 
         # vals = np.linspace(0.0, 1.0, 1./dt)
         vals = np.arange(0.0, 1.0, dt)

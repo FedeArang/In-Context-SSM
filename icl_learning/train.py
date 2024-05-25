@@ -145,7 +145,7 @@ def train(config):
 
 if __name__=="__main__":
     for i in range(5):
-        seed = 42 + i
+        seed = 44 + i
         set_seeds(42)
         config = load_configs()
         config["seed"] = seed
