@@ -43,11 +43,20 @@ class HiPPO_LegT(nn.Module):
         self.full = full
         A, B = transition('legt', N)
 
-        if trainable and full == False:
-            C = np.ones((N,))
-            D = np.zeros((1,))
-            self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
-            self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
+        if trainable:
+            Q = np.arange(N, dtype=np.float64)
+            evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
+            evals = np.reshape(evals, (self.N, ))
+
+            C = np.dot(evals, A)
+            D = np.sum(evals*B.squeeze(-1)).reshape(1,)
+            CC = torch.Tensor(np.reshape(C, (N, )))
+            DD = torch.Tensor(np.reshape(D, (1,)))
+            C_discr = 1/(1-0.5*DD*self.dt)*0.5*dt*CC
+            D_discr = 1/(1-0.5*DD*self.dt)*(1+0.5*dt*DD)
+
+            self.C_discr = torch.nn.Parameter(torch.Tensor(C_discr).requires_grad_())
+            self.D_discr = torch.nn.Parameter(torch.Tensor(D_discr).requires_grad_())
         else:
             Q = np.arange(N, dtype=np.float64)
             evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
@@ -71,9 +80,9 @@ class HiPPO_LegT(nn.Module):
         if trainable and full:
             self.A = torch.nn.Parameter(torch.Tensor(A).requires_grad_())
             self.B = torch.nn.Parameter(torch.Tensor(B).requires_grad_())
-    
-        #self.register_buffer('A', torch.Tensor(A)) # (N, N)
-        #self.register_buffer('B', torch.Tensor(B)) # (N,)
+        else:
+            self.register_buffer('A', torch.Tensor(A)) # (N, N)
+            self.register_buffer('B', torch.Tensor(B)) # (N,)
 
         # vals = np.linspace(0.0, 1.0, 1./dt)
         vals = np.arange(0.0, 1.0, dt)

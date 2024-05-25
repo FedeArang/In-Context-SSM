@@ -1,16 +1,16 @@
 device: "cpu"
-load_from_checkpoint: True
+load_from_checkpoint: False
 checkpoint_path: "checkpoints/2024_05_25_09_43_40/checkpoint_1490.pt"
 save_dir: "checkpoints"
 
 train:
-  batch_size: 64
+  batch_size: 128
   epochs: 1500
   eval_every: 10
-  teacher_ratio: 1.0
+  teacher_ratio: 0.9
   save_every: 10
   data:
-    dataset: "BrownianMotionDataset"
+    dataset: "SineDataset"
     degree: 10
     num_functions: 1000
     num_points: 1000
@@ -22,10 +22,10 @@ train:
 
 optimizer:
   type: "adam"
-  lr: 0.003
+  lr: 0.0001
 
 model:
-  rank: 64
+  rank: 32
   full: True
 
 test:

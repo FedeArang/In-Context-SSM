@@ -32,6 +32,8 @@ def autoregressive(func):
     return wrapper
 
 
+
+
 def get_weight_dist(model: HiPPO_LegT):
     with torch.no_grad():
         model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
@@ -48,9 +50,24 @@ def get_weight_dist(model: HiPPO_LegT):
         dist_inf_C = torch.norm(C-C_l, p=float('inf'))
         dist_inf_D = torch.norm(D-D_l, p=float('inf'))
 
-    return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D,"dist_2_C": dist_2_C,"dist_2_D": dist_2_D,"dist_inf_C": dist_inf_C,"dist_inf_D": dist_inf_D}
+        if model.full:
+            A, B = model.A, model.B
+            A_l, B_l = model_test.A, model_test.B
 
+            dist_1_A = torch.norm(A-A_l, p=1)
+            dist_1_B = torch.norm(B-B_l, p=1)
 
+            dist_2_A = torch.norm(A-A_l, p=2)
+            dist_2_B = torch.norm(B-B_l, p=2)
+
+            dist_inf_A = torch.norm(A-A_l, p=float('inf'))
+            dist_inf_B = torch.norm(B-B_l, p=float('inf'))
+        
+            return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D, "dist_1_A": dist_1_A, "dist_1_B": dist_1_B, "dist_2_A": dist_2_A, "dist_2_B": dist_2_B, "dist_inf_A": dist_inf_A, "dist_inf_B": dist_inf_B}
+        else:
+            return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D}
+                                    
+            
 def save_checkpoint(config, model, epoch, opt, loss):
     # make dir time
     path = f"{config['save_dir']}/checkpoint_{epoch}.pt"
@@ -105,7 +122,7 @@ def train(config):
     dataset_test = get_datasets(config=config, test=True)
 
     
-    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True)
+    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, full=config["model"]["full"])
 
     dataloader_train = DataLoader(dataset, batch_size=config["train"]["batch_size"], shuffle=True)
     dataloader_test = DataLoader(dataset_test, batch_size=config["train"]["batch_size"], shuffle=False)
