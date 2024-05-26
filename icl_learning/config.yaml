@@ -1,6 +1,6 @@
 device: "cpu"
 load_from_checkpoint: False
-checkpoint_path: "checkpoints/2024_05_25_09_43_40/checkpoint_1490.pt"
+checkpoint_path: "checkpoints/2024_05_25_18_15_17/checkpoint_350.pt"
 save_dir: "checkpoints"
 
 train:
@@ -22,16 +22,16 @@ train:
 
 optimizer:
   type: "adam"
-  lr: 0.0001
+  lr: 0.001
 
 model:
-  rank: 128
-  full: True
+  rank: 32
+  full: False
 
 test:
   num_plots: 10
   context_length: 1000
-  teacher_ratio: 1.0
+  teacher_ratio: 0.8
   data:
     dataset: "SineDataset"
     degree: 10

@@ -1701,3 +1701,127 @@ I found a path object that I don't think is part of a bar chart. Ignoring.
 
 To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
 
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240525_133352-exsx732g
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/exsx732g
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 152, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 129, in train
+    y_hat = model(y) # signal y is 0,1,2,3,4,5..., N / y_hat is 1,2,3,4,5,6..., N+1
+            ^^^^^^^^
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1511, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1520, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/In-Context-SSM/model/hippo.py", line 92, in forward
+    u = inputs * self.B # (length, ..., N)
+                 ^^^^^^
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1688, in __getattr__
+    raise AttributeError(f"'{type(self).__name__}' object has no attribute '{name}'")
+AttributeError: 'HiPPO_LegT' object has no attribute 'B'
+wandb: - 0.004 MB of 0.004 MB uploadedwandb: \ 0.004 MB of 0.020 MB uploadedwandb: 🚀 View run HiPPO_LegT at: https://wandb.ai/incontextssm/incontextssm/runs/exsx732g
+wandb: ⭐️ View project at: https://wandb.ai/incontextssm/incontextssm
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240525_133352-exsx732g/logs
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240525_133925-nhtv6tae
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/nhtv6tae
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  return torch.tensor(sine).to(torch.float32).to(self.device)
+/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/plotly/matplotlylib/renderer.py:609: UserWarning:
+
+I found a path object that I don't think is part of a bar chart. Ignoring.
+
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning:
+
+To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240525_143806-j2yewv10
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/j2yewv10
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  return torch.tensor(sine).to(torch.float32).to(self.device)
+/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/plotly/matplotlylib/renderer.py:609: UserWarning:
+
+I found a path object that I don't think is part of a bar chart. Ignoring.
+
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning:
+
+To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240525_144434-p9j03fg4
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/p9j03fg4
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  return torch.tensor(sine).to(torch.float32).to(self.device)
+/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/plotly/matplotlylib/renderer.py:609: UserWarning:
+
+I found a path object that I don't think is part of a bar chart. Ignoring.
+
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning:
+
+To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 169, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 125, in train
+    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, full=config["model"]["full"])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/In-Context-SSM/model/hippo.py", line 76, in __init__
+    A, B, _, _, _ = signal.cont2discrete((A, B, C, D), dt=dt, method=discretization)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/scipy/signal/_lti_conversion.py", line 470, in cont2discrete
+    return cont2discrete(system, dt, method="gbt", alpha=0.5)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/scipy/signal/_lti_conversion.py", line 465, in cont2discrete
+    cd = linalg.solve(ima.transpose(), c.transpose())
+                                       ^^^^^^^^^^^^^
+TypeError: transpose() received an invalid combination of arguments - got (), but expected one of:
+ * (int dim0, int dim1)
+ * (name dim0, name dim1)
+
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 169, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 125, in train
+    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, full=config["model"]["full"])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/In-Context-SSM/model/hippo.py", line 76, in __init__
+    A, B, _, _, _ = signal.cont2discrete((A, B, C, D), dt=dt, method=discretization)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/scipy/signal/_lti_conversion.py", line 470, in cont2discrete
+    return cont2discrete(system, dt, method="gbt", alpha=0.5)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/scipy/signal/_lti_conversion.py", line 465, in cont2discrete
+    cd = linalg.solve(ima.transpose(), c.transpose())
+                                       ^^^^^^^^^^^^^
+TypeError: transpose() received an invalid combination of arguments - got (), but expected one of:
+ * (int dim0, int dim1)
+ * (name dim0, name dim1)
+

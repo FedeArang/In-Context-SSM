@@ -32,6 +32,8 @@ def autoregressive(func):
     return wrapper
 
 
+
+
 def get_weight_dist(model: HiPPO_LegT):
     with torch.no_grad():
         model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
@@ -66,8 +68,6 @@ def get_weight_dist(model: HiPPO_LegT):
             return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D}
                                     
             
-
-
 def save_checkpoint(config, model, epoch, opt, loss):
     # make dir time
     path = f"{config['save_dir']}/checkpoint_{epoch}.pt"

@@ -41,28 +41,26 @@ class HiPPO_LegT(nn.Module):
         self.teacher_ratio = teacher_ratio
         self.device = device
         self.full = full
+        self.trainable = trainable
         A, B = transition('legt', N)
 
-        if trainable:
-            Q = np.arange(N, dtype=np.float64)
-            evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
-            evals = np.reshape(evals, (self.N, ))
+        if trainable and not full:
+            # Q = np.arange(N, dtype=np.float64)
+            # evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
+            # evals = np.reshape(evals, (self.N, ))
 
-            C = np.dot(evals, A)
-            D = np.sum(evals*B.squeeze(-1)).reshape(1,)
+            # C = np.dot(evals, A)
+            # D = np.sum(evals*B.squeeze(-1)).reshape(1,)
+            # CC = torch.Tensor(np.reshape(C, (N, )))
+            # DD = torch.Tensor(np.reshape(D, (1,)))
+            # C_discr = 1/(1-0.5*DD*self.dt)*0.5*dt*CC
+            # D_discr = 1/(1-0.5*DD*self.dt)*(1+0.5*dt*DD)
+            C = np.ones((N,))
+            D = np.zeros((1,))
 
-            #C = np.ones((N,))
-            #D = np.zeros((1,))
-            #C = np.dot(evals, A)
-            #D = np.sum(evals*B.squeeze(-1)).reshape(1,)
 
-            #C = torch.Tensor(np.reshape(C, (N, )))
-            #D = torch.Tensor(np.reshape(D, (1,)))
-
-            C = 1/(1-0.5*D*self.dt)*0.5*dt*C
-            D = 1/(1-0.5*D*self.dt)*(1+0.5*dt*D)
-            self.C_discr = torch.Tensor(C)
-            self.D_discr = torch.Tensor(D)
+            self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
+            self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
         else:
             Q = np.arange(N, dtype=np.float64)
             evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
@@ -83,16 +81,31 @@ class HiPPO_LegT(nn.Module):
 
         B = B.squeeze(-1)
 
-        if trainable and full:
+        if full:
             self.A = torch.nn.Parameter(torch.Tensor(A).requires_grad_())
             self.B = torch.nn.Parameter(torch.Tensor(B).requires_grad_())
         else:
             self.register_buffer('A', torch.Tensor(A)) # (N, N)
             self.register_buffer('B', torch.Tensor(B)) # (N,)
+        
 
         # vals = np.linspace(0.0, 1.0, 1./dt)
         vals = np.arange(0.0, 1.0, dt)
         self.eval_matrix = torch.Tensor(ss.eval_legendre(np.arange(N)[:, None], 1 - 2 * vals).T)
+
+    def generate_C_D(self, A, B):
+        Q = np.arange(self.N, dtype=np.float32)
+        evals = (2*Q + 1)** .5  # The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
+        evals = torch.tensor(np.reshape(evals, (self.N, )))
+
+        C = evals @ A
+        D = torch.sum(evals*B.squeeze(-1)).reshape(1,)
+
+        CC = torch.Tensor(torch.reshape(C, (self.N, )))
+        DD = torch.Tensor(torch.reshape(D, (1,)))
+
+        self.C_discr = 1/(1-0.5*DD*self.dt)*0.5*self.dt*CC
+        self.D_discr = 1/(1-0.5*DD*self.dt)*(1+0.5*self.dt*DD)
 
     def forward(self, inputs):
         """
@@ -107,26 +120,32 @@ class HiPPO_LegT(nn.Module):
         u = inputs * self.B # (length, ..., N)
 
         c = torch.zeros((u.shape[0], u.shape[-1])).to(torch.float32)
-
         cs = []
+        if self.full:
+            self.generate_C_D(self.A, self.B)
+        
+        #next_step_pred = []
         next_step_pred = torch.zeros_like(inputs)
-    
+
         steps_teacherforcing = range(int(inputs.shape[1] * self.teacher_ratio))
         steps_autoregressive = range(len(steps_teacherforcing),inputs.shape[1], 1)
         for i in steps_teacherforcing:
-            c = F.linear(c, self.A) + self.B * inputs[:,i,:]
-            if len(cs)==0:
+            if i==0:
+                c=self.B * inputs[:,i,:]
+            else:
+                c=(c @ self.A + self.B * inputs[:,i,:])
+            if i==0:
                 pred = (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             else:
-                pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+                pred = (2 * c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             cs.append(c)
             next_step_pred[:,i,:]=pred
 
         for i in steps_autoregressive:
-            c = F.linear(c, self.A) + self.B * next_step_pred[:,i-1,:]
-            pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[:,i-1,:]
-            cs.append(c)
+            c=F.linear(c, self.A) + self.B * next_step_pred[:,i-1,:]
+            pred = (2*c@ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[:,i-1,:]
             next_step_pred[:,i,:]=pred
+            cs.append(c)
         
         return next_step_pred.view(inputs.shape[0],inputs.shape[1])
     
