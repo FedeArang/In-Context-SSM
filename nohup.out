@@ -1825,3 +1825,132 @@ TypeError: transpose() received an invalid combination of arguments - got (), bu
  * (int dim0, int dim1)
  * (name dim0, name dim1)
 
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 171, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 125, in train
+    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, full=config["model"]["full"])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: HiPPO_LegT.__init__() got an unexpected keyword argument 'full'
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 171, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 125, in train
+    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, full=config["model"]["full"])
+            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+TypeError: HiPPO_LegT.__init__() got an unexpected keyword argument 'full'
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240525_221349-45zf0org
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/45zf0org
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  return torch.tensor(sine).to(torch.float32).to(self.device)
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240526_111424-98z0xgwl
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/98z0xgwl
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 169, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 140, in train
+    load_checkpoint(config, model, opt)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 85, in load_checkpoint
+    model.load_state_dict(checkpoint['model_state_dict'])
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/torch/nn/modules/module.py", line 2153, in load_state_dict
+    raise RuntimeError('Error(s) in loading state_dict for {}:\n\t{}'.format(
+RuntimeError: Error(s) in loading state_dict for HiPPO_LegT:
+	size mismatch for C_discr: copying a param with shape torch.Size([32]) from checkpoint, the shape in current model is torch.Size([64]).
+	size mismatch for A: copying a param with shape torch.Size([32, 32]) from checkpoint, the shape in current model is torch.Size([64, 64]).
+	size mismatch for B: copying a param with shape torch.Size([32]) from checkpoint, the shape in current model is torch.Size([64]).
+wandb: - 0.004 MB of 0.004 MB uploadedwandb: \ 0.007 MB of 0.019 MB uploadedwandb: 🚀 View run HiPPO_LegT at: https://wandb.ai/incontextssm/incontextssm/runs/98z0xgwl
+wandb: ⭐️ View project at: https://wandb.ai/incontextssm/incontextssm
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240526_111424-98z0xgwl/logs
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240526_113130-m2jedy50
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/m2jedy50
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 169, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 140, in train
+    load_checkpoint(config, model, opt)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 85, in load_checkpoint
+    model.load_state_dict(checkpoint['model_state_dict'])
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/torch/nn/modules/module.py", line 2153, in load_state_dict
+    raise RuntimeError('Error(s) in loading state_dict for {}:\n\t{}'.format(
+RuntimeError: Error(s) in loading state_dict for HiPPO_LegT:
+	size mismatch for C_discr: copying a param with shape torch.Size([32]) from checkpoint, the shape in current model is torch.Size([64]).
+	size mismatch for A: copying a param with shape torch.Size([32, 32]) from checkpoint, the shape in current model is torch.Size([64, 64]).
+	size mismatch for B: copying a param with shape torch.Size([32]) from checkpoint, the shape in current model is torch.Size([64]).
+wandb: - 0.004 MB of 0.004 MB uploadedwandb: \ 0.004 MB of 0.019 MB uploadedwandb: 🚀 View run HiPPO_LegT at: https://wandb.ai/incontextssm/incontextssm/runs/m2jedy50
+wandb: ⭐️ View project at: https://wandb.ai/incontextssm/incontextssm
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240526_113130-m2jedy50/logs
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240526_113204-zs298mua
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/zs298mua
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  return torch.tensor(sine).to(torch.float32).to(self.device)
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 169, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 148, in train
+    loss.backward()
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/torch/_tensor.py", line 522, in backward
+    torch.autograd.backward(
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/torch/autograd/__init__.py", line 266, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: one of the variables needed for gradient computation has been modified by an inplace operation: [torch.FloatTensor [128, 1]], which is output 0 of AsStridedBackward0, is at version 1000; expected version 999 instead. Hint: enable anomaly detection to find the operation that failed to compute its gradient, with torch.autograd.set_detect_anomaly(True).
+wandb: - 0.004 MB of 0.004 MB uploadedwandb: \ 0.004 MB of 0.009 MB uploadedwandb: | 0.020 MB of 0.020 MB uploadedwandb: 🚀 View run HiPPO_LegT at: https://wandb.ai/incontextssm/incontextssm/runs/zs298mua
+wandb: ⭐️ View project at: https://wandb.ai/incontextssm/incontextssm
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240526_113204-zs298mua/logs
+wandb: Currently logged in as: khaefeli (incontextssm). Use `wandb login --relogin` to force relogin
+wandb: Tracking run with wandb version 0.17.0
+wandb: Run data is saved locally in /home/kilian/In-Context-SSM/wandb/run-20240526_113354-8iv24mma
+wandb: Run `wandb offline` to turn off syncing.
+wandb: Syncing run HiPPO_LegT
+wandb: ⭐️ View project at https://wandb.ai/incontextssm/incontextssm
+wandb: 🚀 View run at https://wandb.ai/incontextssm/incontextssm/runs/8iv24mma
+/home/kilian/In-Context-SSM/icl_learning/data.py:138: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.clone().detach() or sourceTensor.clone().detach().requires_grad_(True), rather than torch.tensor(sourceTensor).
+  return torch.tensor(sine).to(torch.float32).to(self.device)
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 169, in <module>
+    train(config)
+  File "/home/kilian/In-Context-SSM/icl_learning/train.py", line 148, in train
+    loss.backward()
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/torch/_tensor.py", line 522, in backward
+    torch.autograd.backward(
+  File "/home/kilian/miniconda3/envs/vmamba/lib/python3.12/site-packages/torch/autograd/__init__.py", line 266, in backward
+    Variable._execution_engine.run_backward(  # Calls into the C++ engine to run the backward pass
+RuntimeError: one of the variables needed for gradient computation has been modified by an inplace operation: [torch.FloatTensor [128, 1]], which is output 0 of AsStridedBackward0, is at version 1000; expected version 999 instead. Hint: enable anomaly detection to find the operation that failed to compute its gradient, with torch.autograd.set_detect_anomaly(True).
+wandb: - 0.004 MB of 0.004 MB uploadedwandb: \ 0.004 MB of 0.020 MB uploadedwandb: | 0.020 MB of 0.020 MB uploadedwandb: 🚀 View run HiPPO_LegT at: https://wandb.ai/incontextssm/incontextssm/runs/8iv24mma
+wandb: ⭐️ View project at: https://wandb.ai/incontextssm/incontextssm
+wandb: Synced 6 W&B file(s), 0 media file(s), 0 artifact file(s) and 0 other file(s)
+wandb: Find logs at: ./wandb/run-20240526_113354-8iv24mma/logs

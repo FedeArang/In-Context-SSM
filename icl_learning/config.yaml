@@ -1,13 +1,13 @@
 device: "cpu"
 load_from_checkpoint: False
-checkpoint_path: "checkpoints/2024_05_25_18_15_17/checkpoint_350.pt"
+checkpoint_path: "checkpoints/2024_05_25_22_33_18/checkpoint_1000.pt"
 save_dir: "checkpoints"
 
 train:
   batch_size: 128
   epochs: 1500
   eval_every: 10
-  teacher_ratio: 1.0
+  teacher_ratio: 0.95
   save_every: 10
   data:
     dataset: "WhiteSignalDataset"
@@ -25,7 +25,7 @@ optimizer:
   lr: 0.001
 
 model:
-  rank: 32
+  rank: 64
   full: False
 
 test:
