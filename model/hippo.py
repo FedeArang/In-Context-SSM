@@ -30,7 +30,7 @@ Each method comprises an exact recurrence c_k = A_k c_{k-1} + B_k f_k, and an ex
 """
 
 class HiPPO_LegT(nn.Module):
-    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False, teacher_ratio: float = 1.0, device: str = "cpu", full: bool = False):
+    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False, teacher_ratio: float = 1.0, device: str = "cpu"):
         """
         N: the order of the HiPPO projection
         dt: discretization step size - should be roughly inverse to the length of the sequence
@@ -39,24 +39,14 @@ class HiPPO_LegT(nn.Module):
         self.N = N
         self.dt = dt
         self.teacher_ratio = teacher_ratio
-        self.device = device
-        self.full = full
         A, B = transition('legt', N)
 
         if trainable:
-            Q = np.arange(N, dtype=np.float64)
-            evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
-            evals = np.reshape(evals, (self.N, ))
+            C = np.ones((N,))
+            D = np.zeros((1,))
+            self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
+            self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
 
-            C = np.dot(evals, A)
-            D = np.sum(evals*B.squeeze(-1)).reshape(1,)
-            CC = torch.Tensor(np.reshape(C, (N, )))
-            DD = torch.Tensor(np.reshape(D, (1,)))
-            C_discr = 1/(1-0.5*DD*self.dt)*0.5*dt*CC
-            D_discr = 1/(1-0.5*DD*self.dt)*(1+0.5*dt*DD)
-
-            self.C_discr = torch.nn.Parameter(torch.Tensor(C_discr).requires_grad_())
-            self.D_discr = torch.nn.Parameter(torch.Tensor(D_discr).requires_grad_())
         else:
             Q = np.arange(N, dtype=np.float64)
             evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
@@ -76,13 +66,9 @@ class HiPPO_LegT(nn.Module):
         A, B, _, _, _ = signal.cont2discrete((A, B, C, D), dt=dt, method=discretization)
 
         B = B.squeeze(-1)
-
-        if trainable and full:
-            self.A = torch.nn.Parameter(torch.Tensor(A).requires_grad_())
-            self.B = torch.nn.Parameter(torch.Tensor(B).requires_grad_())
-        else:
-            self.register_buffer('A', torch.Tensor(A)) # (N, N)
-            self.register_buffer('B', torch.Tensor(B)) # (N,)
+    
+        self.register_buffer('A', torch.Tensor(A)) # (N, N)
+        self.register_buffer('B', torch.Tensor(B)) # (N,)
 
         # vals = np.linspace(0.0, 1.0, 1./dt)
         vals = np.arange(0.0, 1.0, dt)
@@ -103,27 +89,26 @@ class HiPPO_LegT(nn.Module):
         c = torch.zeros((u.shape[0], u.shape[-1])).to(torch.float32)
 
         cs = []
-        next_step_pred = torch.zeros_like(inputs)
+        next_step_pred = []
     
         steps_teacherforcing = range(int(inputs.shape[1] * self.teacher_ratio))
         steps_autoregressive = range(len(steps_teacherforcing),inputs.shape[1], 1)
         for i in steps_teacherforcing:
-            if i==0:
-                cs.append(self.B * inputs[:,i,:])
-            else:
-                cs.append(F.linear(cs[-1], self.A) + self.B * inputs[:,i,:])
+            c = c @ self.A + self.B * inputs[:,i,:]
             if len(cs)==0:
-                pred = (cs[-1] @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+                pred = (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             else:
-                pred = (2*cs[-1] @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
-            
-            next_step_pred[:,i,:]=pred
+                pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+            cs.append(c)
+            next_step_pred.append(pred)
 
         for i in steps_autoregressive:
-            cs.append(F.linear(cs[-1], self.A) + self.B * next_step_pred[:,i-1,:])
-            pred = (2*cs[-1] @ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[:,i-1,:]
-            next_step_pred[:,i,:]=pred
+            c = c @ self.A  + self.B * next_step_pred[-1]
+            pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[-1]
+            cs.append(c)
+            next_step_pred.append(pred)
         
+        return torch.stack(next_step_pred,dim=1)[:,:,0]
         return next_step_pred.view(inputs.shape[0],inputs.shape[1])
     
 

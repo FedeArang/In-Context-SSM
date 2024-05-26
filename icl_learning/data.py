@@ -128,7 +128,7 @@ class SineDataset(Dataset):
         self.device = device
         self.test = test
         self.x = torch.linspace(0, 1, num_points)
-        self.frequencies = np.random.uniform(0.1, 20, num_functions) 
+        self.frequencies = np.random.uniform(0.1, 200, num_functions) 
 
     def __len__(self):
         return self.num_functions
