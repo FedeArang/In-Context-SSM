@@ -9,12 +9,14 @@ train:
   eval_every: 1
   teacher_ratio: 1
   save_every: 10
-  init_opt: True
+  init_opt: False
   basis_learnable: False
   data:
     dataset: "MixedDataset"
     degree: 60
     num_functions: 1000
+    num_summands: 20
+    max_frequency: 200
     num_points: 10000
     dt: 0.001
     mu: 1

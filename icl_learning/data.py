@@ -15,6 +15,8 @@ def get_datasets(config: dict, test: bool):
             return BrownianMotionDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], mu=config["test"]["data"]["mu"], sigma=config["test"]["data"]["sigma"], dt=config["test"]["data"]["dt"], device=config["device"], test=True)
         elif config["test"]["data"]["dataset"] == "SineDataset":
             return SineDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
+        elif config["test"]["data"]["dataset"] == "MultipleSineDataset":
+            return MultipleSineDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], max_frequency=config["test"]["data"]["max_frequency"], num_summands=config["test"]["data"]["num_summands"], device=config["device"], test=True)
         elif config["test"]["data"]["dataset"] == "LinearDataset":
             return LinearDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
         elif config["test"]["data"]["dataset"] == "LegendreDataset":
@@ -32,6 +34,8 @@ def get_datasets(config: dict, test: bool):
             return BrownianMotionDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], mu=config["train"]["data"]["mu"], sigma=config["train"]["data"]["sigma"], dt=config["train"]["data"]["dt"], device=config["device"])
         elif config["train"]["data"]["dataset"] == "SineDataset":
             return SineDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
+        elif config["train"]["data"]["dataset"] == "MultipleSineDataset":
+            return MultipleSineDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], max_frequency=config["train"]["data"]["max_frequency"], num_summands=config["train"]["data"]["num_summands"], device=config["device"])
         elif config["train"]["data"]["dataset"] == "LinearDataset":
             return LinearDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
         elif config["train"]["data"]["dataset"] == "LegendreDataset":
@@ -148,6 +152,35 @@ class SineDataset(Dataset):
     def __getitem__(self, index):
         sine = np.sin(self.frequencies[index]*self.x) 
         return torch.tensor(sine).to(torch.float32).to(self.device)
+    
+
+class MultipleSineDataset(Dataset):
+    def __init__(self, num_points: int, num_functions: int, num_summands: int, max_frequency: int, device: str = "cpu", test: bool = False, **kwargs):
+        self.num_points = num_points
+        self.num_functions = num_functions
+        self.num_summands = num_summands #it says how many different sines we are adding up to create one function
+        self.device = device
+        self.test = test
+        self.x = torch.linspace(0, 1, num_points)
+        self.max_frequency = max_frequency
+        self.frequencies = np.random.uniform(low = 0.1, high = self.max_frequency, size = (self.num_summands, self.num_functions))
+        self.coefficients = np.random.uniform(low = -1, high = 1, size = (self.num_summands, self.num_functions))
+
+    def __len__(self):
+        return self.num_functions
+    
+    def __getitem__(self, index):
+        frequencies = self.frequencies[:, index]
+        coefficients = self.coefficients[:, index]
+
+        def sine(frequency, coefficient):
+            return coefficient*np.sin(frequency*self.x)
+        
+        sines = np.sum(np.array(list(map(sine, frequencies, coefficients))), axis=0)
+        sines = sines/max(sines)
+        return torch.tensor(sines).to(torch.float32).to(self.device)
+        
+
         
 
 
@@ -208,12 +241,12 @@ class MixedDataset(Dataset):
         else:
             dataconfig = config["train"]["data"]
 
-        self.sine_ds = SineDataset(**dataconfig, device=device, test=test)
+        self.sine_ds = MultipleSineDataset(**dataconfig, device=device, test=test)
         self.lin_ds = LinearDataset(**dataconfig, device=device, test=test)
         self.white_ds = WhiteSignalDataset(**dataconfig, device=device, test=test)
         self.legend_ds = LegendreDataset(**dataconfig, device=device, test=test)
 
-        self.dist = [0.20, 0.05, 0.10, 0.65]
+        self.dist = [0.20, 0.05, 0.10, 0.55]
 
     def __len__(self):
         return self.num_functions
