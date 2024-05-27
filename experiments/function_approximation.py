@@ -24,7 +24,7 @@ class FunctionApprox(data.TensorDataset):
 if  __name__ == '__main__':
 
     plot_config = {'T': 10000,
-                   'N': 256,
+                   'N': 17,
                    'batch_size': 1,
                    'experiment' : 'function_approximation',
                    'filename' : 'experiments/function_approx_whitenoise.pdf'}

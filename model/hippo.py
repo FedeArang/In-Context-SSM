@@ -170,8 +170,8 @@ class HiPPO_LegS(nn.Module):
         self.D_discr_stacked = torch.Tensor(D_discr_stacked)
         # print("B_stacked shape", B_stacked.shape)
 
-        #vals = np.linspace(0.0, 1.0, max_length)
-        #self.eval_matrix = torch.Tensor((B[:, None] * ss.eval_legendre(np.arange(N)[:, None], 2 * vals - 1)).T)
+        vals = np.linspace(0.0, 1.0, max_length)
+        self.eval_matrix = torch.Tensor((B[:, None] * ss.eval_legendre(np.arange(N)[:, None], 2 * vals - 1)).T)
 
     
     def forward(self, inputs):
@@ -224,3 +224,110 @@ class HiPPO_LegS(nn.Module):
     def reconstruct(self, c):
         a = self.eval_matrix @ c.unsqueeze(-1)
         return a.squeeze(-1)
+    
+
+class HiPPO_FouT(nn.Module):
+    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False, teacher_ratio: float = 1.0, device: str = "cpu"):
+        """
+        N: the order of the HiPPO projection
+        dt: discretization step size - should be roughly inverse to the length of the sequence
+        """
+        super().__init__()
+        if N%2==0:
+            raise ValueError('N must be odd')
+        self.N = N
+        self.dt = dt
+        self.teacher_ratio = teacher_ratio
+        A, B = transition('fout', N)
+
+        if trainable:
+            C = np.ones((N,))
+            D = np.zeros((1,))
+            self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
+            self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
+
+        else:
+            C=np.zeros(N)
+            for i in range(int((N-1)/2)):
+                C[2*i+2]=-2*np.pi*(i+1)
+            
+            D=np.ones((1,))
+
+            self.C_discr=torch.Tensor(dt*C)
+            self.D_discr=torch.Tensor(D)    
+            
+        # dt, discretization options
+        A, B, _, _, _ = signal.cont2discrete((A, B, C, D), dt=dt, method=discretization)
+    
+        self.register_buffer('A', torch.Tensor(A)) # (N, N)
+        self.register_buffer('B', torch.Tensor(B)) # (N,)
+
+        # vals = np.linspace(0.0, 1.0, 1./dt)
+        vals = np.arange(0.0, 1.0, dt)
+        self.eval_matrix = torch.Tensor(ss.eval_legendre(np.arange(N)[:, None], 1 - 2 * vals).T)
+
+    '''def forward(self, inputs):
+        """
+        inputs : (batch size, length)
+        output : (batch size, length) where N is the order of the HiPPO projection
+        """
+        if len(inputs.shape) == 1:
+            #then batch size is one and we unsqueeze
+            inputs = inputs.unsqueeze(0)
+            
+        inputs = inputs.unsqueeze(-1)
+        u = inputs * self.B # (length, ..., N)
+
+        c = torch.zeros((u.shape[0], u.shape[-1])).to(torch.float32)
+
+        cs = []
+        next_step_pred = torch.zeros_like(inputs)
+    
+        steps_teacherforcing = range(int(inputs.shape[1] * self.teacher_ratio))
+        steps_autoregressive = range(len(steps_teacherforcing),inputs.shape[1], 1)
+        for i in steps_teacherforcing:
+            c = F.linear(c, self.A) + self.B * inputs[:,i,:]
+            if len(cs)==0:
+                pred = (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+            else:
+                pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+            cs.append(c)
+            next_step_pred[:,i,:]=pred
+
+        for i in steps_autoregressive:
+            c = F.linear(c, self.A) + self.B * next_step_pred[:,i-1,:]
+            pred = (2*c @ self.C_discr).reshape(-1,1) + self.D_discr * next_step_pred[:,i-1,:]
+            cs.append(c)
+            next_step_pred[:,i,:]=pred
+        
+        return next_step_pred.view(inputs.shape[0],inputs.shape[1])'''
+    
+    def forward(self, inputs):
+            
+        inputs = inputs.unsqueeze(-1)
+        u = inputs * self.B # (length, ..., N)
+
+        c = torch.zeros(u.shape[-1]).to(torch.float32)
+
+        cs = []
+        next_step_pred = torch.zeros_like(inputs)
+    
+        steps_teacherforcing = range(int(inputs.shape[0] * self.teacher_ratio))
+        
+        for i in steps_teacherforcing:
+            c = F.linear(c, self.A) + self.B * inputs[i]
+            if len(cs)==0:
+                pred = torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
+            else:
+                pred = torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
+            cs.append(c)
+            next_step_pred[i]=pred
+
+        return next_step_pred
+
+    
+
+    def reconstruct(self, c):
+        return (self.eval_matrix @ c.unsqueeze(-1)).squeeze(-1)
+
+

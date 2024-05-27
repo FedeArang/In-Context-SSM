@@ -8,7 +8,7 @@ if __name__== '__main__':
     test_data = torch.Tensor(test_data['Close*'].to_numpy()) #we only predict the closing value
 
     plot_config = {'T' : len(test_data),
-                   'N' : 256,
+                   'N' : 17,
                    'filename' : 'experiments/financial_data.pdf',
                    'experiment' : 'financial_data'}
     

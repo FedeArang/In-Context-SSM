@@ -29,7 +29,7 @@ if __name__ == '__main__':
                         'sigma': 3,
                         'initial_state': 0}
     
-    plot_config = {'N': 256, 
+    plot_config = {'N': 17, 
                    'T': experiment_config['length'], 
                    'filename': 'experiments/brownian_motion.pdf',
                    'experiment': 'brownian_motion'}
