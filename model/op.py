@@ -63,6 +63,36 @@ def transition(measure, N, **measure_args):
         A = T @ M @ np.linalg.inv(T)
         B = np.diag(T)[:, None]
 
+    elif measure == 'fout':
+
+        A = np.zeros((N, N))
+        B = np.zeros(N)
+
+        for n in range(N):
+
+            if n==0:
+                B[n]=2
+            elif n%2==1:
+                B[n]=2*np.sqrt(2)
+            else:
+                B[n]=0
+
+            for k in range(N):
+
+                if n==0 and k==0:
+                    A[n, k] = -2
+                elif (n==0 and k%2==1) or (k==0 and n%2==1):
+                    A[n,k] = -2*np.sqrt(2)
+                elif n%2==1 and k%2==1:
+                    A[n,k]=-4
+                elif n-k==1 and k%2==1:
+                    A[n,k]=2*np.pi*n
+                elif k-n==1 and n%2==1:
+                    A[n,k]=-2*np.pi*k
+                else:
+                    A[n, k] = 0
+
+            
     return A, B
 
 
