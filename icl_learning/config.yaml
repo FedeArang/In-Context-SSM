@@ -12,10 +12,10 @@ train:
   init_opt: True
   basis_learnable: False
   data:
-    dataset: "LegendreDataset"
+    dataset: "MixedDataset"
     degree: 60
     num_functions: 1000
-    num_points: 50000
+    num_points: 10000
     dt: 0.001
     mu: 1
     sigma: 5

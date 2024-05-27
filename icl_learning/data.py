@@ -19,6 +19,8 @@ def get_datasets(config: dict, test: bool):
             return LinearDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
         elif config["test"]["data"]["dataset"] == "LegendreDataset":
             return LegendreDataset(degree=config["test"]["data"]["degree"], num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
+        elif config["test"]["data"]["dataset"] == "MixedDataset":
+            return MixedDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], config=config, device=config["device"], test=True)
         else:
             raise ValueError("Unknown dataset")
     else:
@@ -34,12 +36,14 @@ def get_datasets(config: dict, test: bool):
             return LinearDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
         elif config["train"]["data"]["dataset"] == "LegendreDataset":
             return LegendreDataset(degree=config["train"]["data"]["degree"], num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
+        elif config["train"]["data"]["dataset"] == "MixedDataset":
+            return MixedDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], config=config, device=config["device"])
         else:
             raise ValueError("Unknown dataset")
         
 
 class PolyDataset(Dataset):
-    def __init__(self, degree: int, num_points: int, num_functions: int, device: str = "cpu", test: bool = False):
+    def __init__(self, degree: int, num_points: int, num_functions: int, device: str = "cpu", test: bool = False, **kwargs):
         self.degree = degree # max degree of each sampled polynomial
         self.num_points = num_points # nr of points to sample from each polynomial as the context length
         self.num_functions = num_functions # nr of plolynomials to use, these will be random at each new step
@@ -69,7 +73,7 @@ class PolyDataset(Dataset):
 
 
 class WhiteSignalDataset(Dataset):
-    def __init__(self, num_points: int, num_functions: int, device: str = "cpu", test: bool = False):
+    def __init__(self, num_points: int, num_functions: int, device: str = "cpu", test: bool = False, **kwargs):
         self.TRAINSEED=1
         self.x = torch.linspace(0, 1, num_points)
         self.test = test
@@ -98,7 +102,7 @@ class WhiteSignalDataset(Dataset):
 
 
 class BrownianMotionDataset(Dataset):
-    def __init__(self, num_points: int, num_functions: int, mu: float, sigma: float, dt: float, initial_state: float=0.0, device: str = "cpu", test: bool = False):
+    def __init__(self, num_points: int, num_functions: int, mu: float, sigma: float, dt: float, initial_state: float=0.0, device: str = "cpu", test: bool = False, **kwargs):
         self.num_points = num_points
         self.num_functions = num_functions
         self.device = device
@@ -130,7 +134,7 @@ class BrownianMotionDataset(Dataset):
     
 
 class SineDataset(Dataset):
-    def __init__(self, num_points: int, num_functions: int, device: str = "cpu", test: bool = False):
+    def __init__(self, num_points: int, num_functions: int, device: str = "cpu", test: bool = False, **kwargs):
         self.num_points = num_points
         self.num_functions = num_functions
         self.device = device
@@ -148,7 +152,7 @@ class SineDataset(Dataset):
 
 
 class LinearDataset(Dataset):
-    def __init__(self, num_points: int, num_functions: int, device: str = "cpu", test: bool = False):
+    def __init__(self, num_points: int, num_functions: int, device: str = "cpu", test: bool = False, **kwargs):
         self.num_points = num_points
         self.num_functions = num_functions
         self.device = device
@@ -168,7 +172,7 @@ class LinearDataset(Dataset):
         
 
 class LegendreDataset(Dataset):
-    def __init__(self, degree: int, num_points: int, num_functions: int, device: str = "cpu", test: bool = False):
+    def __init__(self, degree: int, num_points: int, num_functions: int, device: str = "cpu", test: bool = False,**kwargs):
         self.degree = degree # max degree of each sampled polynomial
         self.num_points = num_points # nr of points to sample from each polynomial as the context length
         self.num_functions = num_functions # nr of plolynomials to use, these will be random at each new step
@@ -182,8 +186,50 @@ class LegendreDataset(Dataset):
     def __getitem__(self, index):
         # sample random coefficients for the legendre polynomial
         rands = np.random.uniform(-1,1,self.degree) * 1000
-        return self._legendre(rands, self.x)
+        unnormalized = self._legendre(rands, self.x)
+        max = torch.max(np.abs(unnormalized))
+        y = unnormalized / max
+        return torch.tensor(y).to(torch.float32).to(self.device)
 
     def _legendre(self, coeff, x):
         return np.polynomial.legendre.legval(x, coeff)
         
+
+class MixedDataset(Dataset):
+    def __init__(self, num_points: int, num_functions: int, config: dict, device: str = "cpu", test: bool = False, **kwargs):
+        self.num_points = num_points
+        self.num_functions = num_functions
+        self.device = device
+        self.test = test
+        self.x = torch.linspace(0, 1, num_points)
+        
+        if test:
+            dataconfig = config["test"]["data"] 
+        else:
+            dataconfig = config["train"]["data"]
+
+        self.sine_ds = SineDataset(**dataconfig, device=device, test=test)
+        self.lin_ds = LinearDataset(**dataconfig, device=device, test=test)
+        self.white_ds = WhiteSignalDataset(**dataconfig, device=device, test=test)
+        self.legend_ds = LegendreDataset(**dataconfig, device=device, test=test)
+
+        self.dist = [0.20, 0.05, 0.10, 0.65]
+
+    def __len__(self):
+        return self.num_functions
+    
+    def __getitem__(self, index):
+        # sample from dist
+        r = random.random()
+
+        if r < self.dist[0]:
+            return self.sine_ds[index]
+        elif r < self.dist[0] + self.dist[1]:
+            return self.lin_ds[index]
+        elif r < self.dist[0] + self.dist[1] + self.dist[2]:
+            return self.white_ds[index]
+        else:
+            return self.legend_ds[index]
+        
+        
+
