@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 
 import sys
 sys.path.append('C:/Users/faran/Documents_nuova/Documenti/Federico/ETH/in context learning/Git_Hub/In-Context-SSM/model')
-from hippo import HiPPO_LegT
-#from model.hyppo import HiPPO_LegS
+#from hippo import HiPPO_LegT
+from model.hippo import HiPPO_LegT
 
 
 def plot(test_data, config):

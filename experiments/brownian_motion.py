@@ -24,7 +24,7 @@ if __name__ == '__main__':
     np.random.seed(seed=10)
 
     experiment_config ={'length':1000, 
-                        'dt': 0.01,
+                        'dt': 0.001,
                         'mu':1, 
                         'sigma': 5,
                         'initial_state': 0}

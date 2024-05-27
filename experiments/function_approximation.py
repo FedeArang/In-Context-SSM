@@ -2,7 +2,7 @@ import torch
 import numpy as np
 import torch.utils.data as data
 import nengo
-from plot import plot
+from .plot import plot
 
 class FunctionApprox(data.TensorDataset):
 

@@ -1,42 +1,45 @@
 device: "cpu"
 load_from_checkpoint: False
-checkpoint_path: "checkpoints/2024_05_25_22_33_18/checkpoint_1000.pt"
+checkpoint_path: "checkpoints/2024_05_26_19_15_18/checkpoint_250.pt"
 save_dir: "checkpoints"
 
 train:
   batch_size: 128
-  epochs: 1500
-  eval_every: 10
-  teacher_ratio: 0.95
+  epochs: 20000
+  eval_every: 1
+  teacher_ratio: 1
   save_every: 10
+  init_opt: True
+  basis_learnable: False
   data:
-    dataset: "WhiteSignalDataset"
-    degree: 10
+    dataset: "LegendreDataset"
+    degree: 60
     num_functions: 1000
-    num_points: 1000
-    dt: 0.01
+    num_points: 50000
+    dt: 0.001
     mu: 1
     sigma: 5
+  
 
 
 
 optimizer:
   type: "adam"
-  lr: 0.001
+  lr: 0.005
 
 model:
-  rank: 64
+  rank: 16
   full: False
 
 test:
-  num_plots: 10
-  context_length: 1000
-  teacher_ratio: 0.8
+  num_plots: 1
+  context_length: 10000
+  teacher_ratio: 1.0
   data:
-    dataset: "SineDataset"
+    dataset: "LegendreDataset"
     degree: 10
     num_functions: 1000
-    num_points: 1000
+    num_points: 10000
     dt: 0.01
     mu: 1
     sigma: 5
