@@ -4,7 +4,7 @@ checkpoint_path: "checkpoints/2024_05_26_19_15_18/checkpoint_250.pt"
 save_dir: "checkpoints"
 
 train:
-  batch_size: 128
+  batch_size: 256
   epochs: 20000
   eval_every: 1
   teacher_ratio: 1
