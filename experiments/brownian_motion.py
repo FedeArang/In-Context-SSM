@@ -24,12 +24,12 @@ if __name__ == '__main__':
     np.random.seed(seed=10)
 
     experiment_config ={'length':1000, 
-                        'dt': 0.01,
+                        'dt': 0.001,
                         'mu':1, 
-                        'sigma': 5,
+                        'sigma': 3,
                         'initial_state': 0}
     
-    plot_config = {'N':256, 
+    plot_config = {'N': 17, 
                    'T': experiment_config['length'], 
                    'filename': 'experiments/brownian_motion.pdf',
                    'experiment': 'brownian_motion'}

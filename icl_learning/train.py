@@ -37,20 +37,22 @@ def autoregressive(func):
 def get_weight_dist(model: HiPPO_LegT):
     with torch.no_grad():
         model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
-        C, D = model.C_discr, model.D_discr
-        C_l, D_l = model_test.C_discr, model_test.D_discr
+        
 
-        # calculate the distance between the learned and the true weights in P=1,2,inf
-        dist_1_C = torch.norm(C-C_l, p=1)
-        dist_1_D = torch.norm(D-D_l, p=1)
+        if model.basis_learnable:
+            C_l, D_l = model.generate_C_D(model.A, model.B)
+            C, D = model.C_discr, model.D_discr
 
-        dist_2_C = torch.norm(C-C_l, p=2)
-        dist_2_D = torch.norm(D-D_l, p=2)
+            dist_1_C = torch.norm(C-C_l, p=1)
+            dist_1_D = torch.norm(D-D_l, p=1)
 
-        dist_inf_C = torch.norm(C-C_l, p=float('inf'))
-        dist_inf_D = torch.norm(D-D_l, p=float('inf'))
+            dist_2_C = torch.norm(C-C_l, p=2)
+            dist_2_D = torch.norm(D-D_l, p=2)
 
-        if model.basis_trainable:
+            dist_inf_C = torch.norm(C-C_l, p=float('inf'))
+            dist_inf_D = torch.norm(D-D_l, p=float('inf'))
+
+
             A, B = model.A, model.B
             A_l, B_l = model_test.A, model_test.B
 
@@ -62,10 +64,26 @@ def get_weight_dist(model: HiPPO_LegT):
 
             dist_inf_A = torch.norm(A-A_l, p=float('inf'))
             dist_inf_B = torch.norm(B-B_l, p=float('inf'))
+
+            
+
         
             return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D, "dist_1_A": dist_1_A, "dist_1_B": dist_1_B, "dist_2_A": dist_2_A, "dist_2_B": dist_2_B, "dist_inf_A": dist_inf_A, "dist_inf_B": dist_inf_B}
         else:
-        return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D}
+
+            C, D = model.C_discr, model.D_discr
+            C_l, D_l = model_test.C_discr, model_test.D_discr
+
+            # calculate the distance between the learned and the true weights in P=1,2,inf
+            dist_1_C = torch.norm(C-C_l, p=1)
+            dist_1_D = torch.norm(D-D_l, p=1)
+
+            dist_2_C = torch.norm(C-C_l, p=2)
+            dist_2_D = torch.norm(D-D_l, p=2)
+
+            dist_inf_C = torch.norm(C-C_l, p=float('inf'))
+            dist_inf_D = torch.norm(D-D_l, p=float('inf'))
+            return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D}
                                     
             
 def save_checkpoint(config, model, epoch, opt, loss):
@@ -90,10 +108,12 @@ def load_checkpoint(config, model, opt):
 def test(config, dataloader, model, test=True):
     model.eval()
     x = dataloader.dataset.x
+    model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
     with torch.no_grad():
         total_loss = 0
         for i, y in enumerate(dataloader):
             y_hat = model(y) # Now y is the signal 1,2,3,4,5,N+1, and y is 0,1,2,3,4,5..., N
+            y_hat_exp = model_test(y)
             loss = torch.nn.MSELoss()(y_hat[:,:-1], y[:,1:])
             total_loss += loss.item()
             # make plots of the predictions and the ground truth and log them to wandb
@@ -102,9 +122,10 @@ def test(config, dataloader, model, test=True):
                     plt.figure()
                     plt.plot(x[1:], y_hat[j][:-1].numpy(), label="prediction")
                     plt.plot(x[1:], y[j][1:].numpy(), label="ground truth")
+                    plt.plot(x[1:], y_hat_exp[j][:-1].numpy(), label="explicit")
                     plt.legend()
                     plt.title(f"Function {i}")
-                    wandb.log({f"function_{i}": plt})
+                    wandb.log({f"function_{i}_{test}": plt})
 
         # evaluate weight distane of D,C to the learned ones
         weight_dist = get_weight_dist(model)
@@ -122,7 +143,7 @@ def train(config):
     dataset_test = get_datasets(config=config, test=True)
 
     
-    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True)
+    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, init_opt=config["train"]["init_opt"], basis_learnable=config["train"]["basis_learnable"])
 
     dataloader_train = DataLoader(dataset, batch_size=config["train"]["batch_size"], shuffle=True)
     dataloader_test = DataLoader(dataset_test, batch_size=config["train"]["batch_size"], shuffle=False)
@@ -141,16 +162,6 @@ def train(config):
 
     for epoch in range(config["train"]["epochs"]):
         epoch_loss = 0
-        for i, y in enumerate(dataloader_train):
-            opt.zero_grad()
-            y_hat = model(y) # signal y is 0,1,2,3,4,5..., N / y_hat is 1,2,3,4,5,6..., N+1
-            loss = torch.nn.MSELoss()(y_hat[:,:-1].flatten(), y[:,1:].flatten())
-            loss.backward()
-            opt.step()
-
-            epoch_loss += loss.item()
-
-        wandb.log({"loss": epoch_loss})
 
         if epoch % config["train"]["eval_every"] == 0:
             test(config, dataloader_test, model)
@@ -158,6 +169,19 @@ def train(config):
 
         if epoch % config["train"]["save_every"] == 0:
             save_checkpoint(config, model, epoch, opt, epoch_loss)
+
+        for i, y in enumerate(dataloader_train):
+            opt.zero_grad()
+            y_hat = model(y) # signal y is 0,1,2,3,4,5..., N / y_hat is 1,2,3,4,5,6..., N+1
+            loss = torch.nn.L1Loss()(y_hat[:,:-1].flatten(), y[:,1:].flatten())
+            loss.backward()
+            opt.step()
+
+            epoch_loss += loss.item()
+
+        wandb.log({"loss": epoch_loss})
+
+        
 
 
 if __name__=="__main__":
