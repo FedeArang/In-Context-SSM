@@ -9,12 +9,12 @@ train:
   eval_every: 1
   teacher_ratio: 1
   save_every: 10
-  init_opt: False
+  init_opt: "zero" #options are: mean (mean + std gaussian noise), opt (optimal weights construction), zero (0 mean gaussian)
   basis_learnable: False
   data:
     dataset: "MixedDataset"
     degree: 60
-    num_functions: 1000
+    num_functions: 10000
     num_summands: 20
     max_frequency: 200
     num_points: 10000

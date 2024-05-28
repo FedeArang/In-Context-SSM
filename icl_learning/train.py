@@ -75,14 +75,14 @@ def get_weight_dist(model: HiPPO_LegT):
             C_l, D_l = model_test.C_discr, model_test.D_discr
 
             # calculate the distance between the learned and the true weights in P=1,2,inf
-            dist_1_C = torch.norm(C-C_l, p=1)
-            dist_1_D = torch.norm(D-D_l, p=1)
+            dist_1_C = torch.norm(C-C_l, p=1)/torch.norm(C, p=1)
+            dist_1_D = torch.norm(D-D_l, p=1)/torch.norm(D, p=1)
 
-            dist_2_C = torch.norm(C-C_l, p=2)
-            dist_2_D = torch.norm(D-D_l, p=2)
+            dist_2_C = torch.norm(C-C_l, p=2)/torch.norm(C, p=2)
+            dist_2_D = torch.norm(D-D_l, p=2)/torch.norm(D, p=2)
 
-            dist_inf_C = torch.norm(C-C_l, p=float('inf'))
-            dist_inf_D = torch.norm(D-D_l, p=float('inf'))
+            dist_inf_C = torch.norm(C-C_l, p=float('inf'))/torch.norm(C, p=float('inf'))
+            dist_inf_D = torch.norm(D-D_l, p=float('inf'))/torch.norm(D, p=float('inf'))
             return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D}
                                     
             
