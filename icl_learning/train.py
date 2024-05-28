@@ -41,7 +41,7 @@ def get_weight_dist(model: HiPPO_LegT):
 
         if model.basis_learnable:
             C_l, D_l = model.generate_C_D(model.A, model.B)
-            C, D = model.C_discr, model.D_discr
+            C, D = model.C_discr.clone().detach(), model.D_discr.clone().detach()
 
             dist_1_C = torch.norm(C-C_l, p=1)
             dist_1_D = torch.norm(D-D_l, p=1)
@@ -71,7 +71,7 @@ def get_weight_dist(model: HiPPO_LegT):
             return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D, "dist_1_A": dist_1_A, "dist_1_B": dist_1_B, "dist_2_A": dist_2_A, "dist_2_B": dist_2_B, "dist_inf_A": dist_inf_A, "dist_inf_B": dist_inf_B}
         else:
 
-            C, D = model.C_discr, model.D_discr
+            C, D = model.C_discr.clone().detach(), model.D_discr.clone().detach()
             C_l, D_l = model_test.C_discr, model_test.D_discr
 
             # calculate the distance between the learned and the true weights in P=1,2,inf
@@ -114,7 +114,7 @@ def test(config, dataloader, model, test=True):
         for i, y in enumerate(dataloader):
             y_hat = model(y) # Now y is the signal 1,2,3,4,5,N+1, and y is 0,1,2,3,4,5..., N
             y_hat_exp = model_test(y)
-            loss = torch.nn.MSELoss()(y_hat[:,:-1], y[:,1:])
+            loss = torch.nn.L1Loss()(y_hat[:,:-1], y[:,1:])
             total_loss += loss.item()
             # make plots of the predictions and the ground truth and log them to wandb
             if i==0:
@@ -181,7 +181,7 @@ def train(config):
 
         wandb.log({"loss": epoch_loss})
 
-        
+
 
 
 if __name__=="__main__":
