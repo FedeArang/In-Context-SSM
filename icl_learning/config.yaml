@@ -4,13 +4,13 @@ checkpoint_path: "checkpoints/2024_05_25_22_33_18/checkpoint_1000.pt"
 save_dir: "checkpoints"
 
 train:
-  batch_size: 128
+  batch_size: 64
   epochs: 1500
   eval_every: 10
-  teacher_ratio: 0.95
+  teacher_ratio: 1.0
   save_every: 10
   data:
-    dataset: "SineDataset"
+    dataset: "WhiteSignalDataset"
     degree: 10
     num_functions: 1000
     num_points: 1000
@@ -25,7 +25,7 @@ optimizer:
   lr: 0.001
 
 model:
-  rank: 64
+  rank: 256
   full: False
 
 test:
