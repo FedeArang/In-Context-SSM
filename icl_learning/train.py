@@ -159,6 +159,8 @@ def log_model(model,test=False):
     else:
         wandb.log({"D_discr": wandb.Image(cax_d.get_figure())}, commit=False)
 
+    plt.close("all")
+
 
 
 
