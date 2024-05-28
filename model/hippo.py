@@ -139,7 +139,7 @@ class HiPPO_LegT(nn.Module):
             if len(cs)==0:
                 pred = (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             else:
-                pred = (cs[-1] @ self.C_discr).reshape(-1,1) + (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+                pred = (c @ self.C_discr).reshape(-1,1) + (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             cs.append(c)
             next_step_pred.append(pred)
 

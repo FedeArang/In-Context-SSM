@@ -15,10 +15,14 @@ train:
     dataset: "MixedDataset"
     degree: 60
     num_functions: 1000
+    num_summands: 20
+    max_frequency: 200
     num_points: 10000
     dt: 0.001
     mu: 1
     sigma: 5
+  
+
   
 
 

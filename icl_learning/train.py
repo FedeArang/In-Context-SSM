@@ -32,8 +32,6 @@ def autoregressive(func):
     return wrapper
 
 
-
-
 def get_weight_dist(model: HiPPO_LegT):
     with torch.no_grad():
         model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
@@ -125,15 +123,16 @@ def test(config, dataloader, model, test=True):
                     plt.plot(x[1:], y_hat_exp[j][:-1].numpy(), label="explicit")
                     plt.legend()
                     plt.title(f"Function {i}")
-                    wandb.log({f"function_{i}_{test}": plt})
+                    wandb.log({f"function_{i}_{test}": plt}, commit=False)
+
+            if not test:
+                break
 
         # evaluate weight distane of D,C to the learned ones
         weight_dist = get_weight_dist(model)
-        wandb.log(weight_dist)
+        wandb.log(weight_dist, commit=False)
         if test:
-            wandb.log({"test_loss": total_loss})
-        else:
-            wandb.log({"test_loss": total_loss})
+            wandb.log({"test_loss": total_loss}, commit=False)
 
     model.train()
 
@@ -155,7 +154,9 @@ def train(config):
         project="incontextssm",
                 config=config,
                 name="HiPPO_LegT")
-    wandb.watch(model)
+    
+    wandb.watch(model, log_freq=1, log="all")
+
 
     if config["load_from_checkpoint"]:
         load_checkpoint(config, model, opt)
@@ -179,15 +180,15 @@ def train(config):
 
             epoch_loss += loss.item()
 
-        wandb.log({"loss": epoch_loss})
+        wandb.log({"loss": epoch_loss},commit=True)
 
 
 
 
 if __name__=="__main__":
     for i in range(5):
-        seed = 44 + i
-        set_seeds(42)
+        seed = 45 + i
+        set_seeds(seed)
         config = load_configs()
         config["seed"] = seed
         train(config)
