@@ -64,7 +64,7 @@ class HiPPO_LegT(nn.Module):
 
             else:
                 C = np.random.randn(N)
-                D = np.zeros((1,))
+                D = np.random.randn(1)
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
 
@@ -139,7 +139,7 @@ class HiPPO_LegT(nn.Module):
             if len(cs)==0:
                 pred = (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             else:
-                pred = (cs[-1] @ self.C_discr).reshape(-1,1) + (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
+                pred = (c @ self.C_discr).reshape(-1,1) + (c @ self.C_discr).reshape(-1,1) + self.D_discr * inputs[:,i,:]
             cs.append(c)
             next_step_pred.append(pred)
 

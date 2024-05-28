@@ -32,8 +32,6 @@ def autoregressive(func):
     return wrapper
 
 
-
-
 def get_weight_dist(model: HiPPO_LegT):
     with torch.no_grad():
         model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
@@ -41,7 +39,7 @@ def get_weight_dist(model: HiPPO_LegT):
 
         if model.basis_learnable:
             C_l, D_l = model.generate_C_D(model.A, model.B)
-            C, D = model.C_discr, model.D_discr
+            C, D = model.C_discr.clone().detach(), model.D_discr.clone().detach()
 
             dist_1_C = torch.norm(C-C_l, p=1)
             dist_1_D = torch.norm(D-D_l, p=1)
@@ -71,7 +69,7 @@ def get_weight_dist(model: HiPPO_LegT):
             return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D, "dist_1_A": dist_1_A, "dist_1_B": dist_1_B, "dist_2_A": dist_2_A, "dist_2_B": dist_2_B, "dist_inf_A": dist_inf_A, "dist_inf_B": dist_inf_B}
         else:
 
-            C, D = model.C_discr, model.D_discr
+            C, D = model.C_discr.clone().detach(), model.D_discr.clone().detach()
             C_l, D_l = model_test.C_discr, model_test.D_discr
 
             # calculate the distance between the learned and the true weights in P=1,2,inf
@@ -114,7 +112,7 @@ def test(config, dataloader, model, test=True):
         for i, y in enumerate(dataloader):
             y_hat = model(y) # Now y is the signal 1,2,3,4,5,N+1, and y is 0,1,2,3,4,5..., N
             y_hat_exp = model_test(y)
-            loss = torch.nn.MSELoss()(y_hat[:,:-1], y[:,1:])
+            loss = torch.nn.L1Loss()(y_hat[:,:-1], y[:,1:])
             total_loss += loss.item()
             # make plots of the predictions and the ground truth and log them to wandb
             if i==0:
@@ -125,15 +123,16 @@ def test(config, dataloader, model, test=True):
                     plt.plot(x[1:], y_hat_exp[j][:-1].numpy(), label="explicit")
                     plt.legend()
                     plt.title(f"Function {i}")
-                    wandb.log({f"function_{i}_{test}": plt})
+                    wandb.log({f"function_{i}_{test}": plt}, commit=False)
+
+            if not test:
+                break
 
         # evaluate weight distane of D,C to the learned ones
         weight_dist = get_weight_dist(model)
-        wandb.log(weight_dist)
+        wandb.log(weight_dist, commit=False)
         if test:
-            wandb.log({"test_loss": total_loss})
-        else:
-            wandb.log({"test_loss": total_loss})
+            wandb.log({"test_loss": total_loss}, commit=False)
 
     model.train()
 
@@ -155,7 +154,9 @@ def train(config):
         project="incontextssm",
                 config=config,
                 name="HiPPO_LegT")
-    wandb.watch(model)
+    
+    wandb.watch(model, log_freq=1, log="all")
+
 
     if config["load_from_checkpoint"]:
         load_checkpoint(config, model, opt)
@@ -179,15 +180,15 @@ def train(config):
 
             epoch_loss += loss.item()
 
-        wandb.log({"loss": epoch_loss})
+        wandb.log({"loss": epoch_loss},commit=True)
 
-        
+
 
 
 if __name__=="__main__":
     for i in range(5):
-        seed = 44 + i
-        set_seeds(42)
+        seed = 45 + i
+        set_seeds(seed)
         config = load_configs()
         config["seed"] = seed
         train(config)
