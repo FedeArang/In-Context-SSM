@@ -45,7 +45,7 @@ class HiPPO_LegT(nn.Module):
         A, B = transition('legt', N)
 
         if trainable:
-            if init_opt:
+            if init_opt == "opt":
                 Q = np.arange(N, dtype=np.float64)
                 evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
                 evals = np.reshape(evals, (self.N, ))
@@ -62,9 +62,33 @@ class HiPPO_LegT(nn.Module):
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C_discr).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D_discr).requires_grad_())
 
-            else:
-                C = np.zeros((N))
-                D = np.ones((1,))
+            elif init_opt == "zero":
+                C = np.random.randn(N)
+                D = np.random.randn(1)
+                self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
+                self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
+
+            elif init_opt == "mean":
+                Q = np.arange(N, dtype=np.float64)
+                evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
+                evals = np.reshape(evals, (self.N, ))
+
+                C = np.dot(evals, A)
+                D = np.sum(evals*B.squeeze(-1)).reshape(1,)
+
+                self.C = torch.Tensor(np.reshape(C, (N, )))
+                self.D = torch.Tensor(np.reshape(D, (1,)))
+
+                C_discr = 1/(1-0.5*self.D*self.dt)*0.5*dt*self.C
+                D_discr = 1/(1-0.5*self.D*self.dt)*(1+0.5*dt*self.D)
+
+                C_mean = torch.mean(C_discr).item()
+                D_mean = torch.mean(D_discr).item()
+                C_std = torch.std(C_discr).item()
+
+                C = np.random.randn(N) * C_std + C_mean
+                D = np.random.randn(1) + D_mean
+
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
 

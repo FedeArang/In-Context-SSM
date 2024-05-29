@@ -245,7 +245,11 @@ class MixedDataset(Dataset):
         self.white_ds = WhiteSignalDataset(**dataconfig, device=device, test=test)
         self.legend_ds = LegendreDataset(**dataconfig, device=device, test=test)
 
+<<<<<<< HEAD
         self.dist = [0.20, 0.05, 0.10, 0.55]
+=======
+        self.dist = [0.25, 0.05, 0.10, 0.50]
+>>>>>>> 2076baf1cfb3962d38a3114ed9b7c46ce3dc53de
 
     def __len__(self):
         return self.num_functions
