@@ -15,4 +15,5 @@ class Loss:
             self.reg_fn = torch.nn.L1Loss()
         elif config["regualization"] == "L2":
             self.reg_fn = torch.nn.MSELoss()
-            
+        else:
+            self.reg_fn = None

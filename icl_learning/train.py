@@ -37,54 +37,22 @@ def autoregressive(func):
 def get_weight_dist(model: HiPPO_LegT):
     with torch.no_grad():
         model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
-        
+    
 
-        if model.basis_learnable:
-            C_l, D_l = model.generate_C_D(model.A, model.B)
-            C, D = model.C_discr.clone().detach(), model.D_discr.clone().detach()
+        C, D = model.C_discr.clone().detach(), model.D_discr.clone().detach()
+        C_l, D_l = model_test.C_discr, model_test.D_discr
 
-            dist_1_C = torch.norm(C-C_l, p=1)
-            dist_1_D = torch.norm(D-D_l, p=1)
+        # calculate the distance between the learned and the true weights in P=1,2,inf
+        dist_1_C = torch.norm(C-C_l, p=1)
+        dist_1_D = torch.norm(D-D_l, p=1)
 
-            dist_2_C = torch.norm(C-C_l, p=2)
-            dist_2_D = torch.norm(D-D_l, p=2)
+        dist_2_C = torch.norm(C-C_l, p=2)
+        dist_2_D = torch.norm(D-D_l, p=2)
 
-            dist_inf_C = torch.norm(C-C_l, p=float('inf'))
-            dist_inf_D = torch.norm(D-D_l, p=float('inf'))
-
-
-            A, B = model.A, model.B
-            A_l, B_l = model_test.A, model_test.B
-
-            dist_1_A = torch.norm(A-A_l, p=1)
-            dist_1_B = torch.norm(B-B_l, p=1)
-
-            dist_2_A = torch.norm(A-A_l, p=2)
-            dist_2_B = torch.norm(B-B_l, p=2)
-
-            dist_inf_A = torch.norm(A-A_l, p=float('inf'))
-            dist_inf_B = torch.norm(B-B_l, p=float('inf'))
-
-            
-
-        
-            return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D, "dist_1_A": dist_1_A, "dist_1_B": dist_1_B, "dist_2_A": dist_2_A, "dist_2_B": dist_2_B, "dist_inf_A": dist_inf_A, "dist_inf_B": dist_inf_B}
-        else:
-
-            C, D = model.C_discr.clone().detach(), model.D_discr.clone().detach()
-            C_l, D_l = model_test.C_discr, model_test.D_discr
-
-            # calculate the distance between the learned and the true weights in P=1,2,inf
-            dist_1_C = torch.norm(C-C_l, p=1)/torch.norm(C, p=1)
-            dist_1_D = torch.norm(D-D_l, p=1)/torch.norm(D, p=1)
-
-            dist_2_C = torch.norm(C-C_l, p=2)/torch.norm(C, p=2)
-            dist_2_D = torch.norm(D-D_l, p=2)/torch.norm(D, p=2)
-
-            dist_inf_C = torch.norm(C-C_l, p=float('inf'))/torch.norm(C, p=float('inf'))
-            dist_inf_D = torch.norm(D-D_l, p=float('inf'))/torch.norm(D, p=float('inf'))
-            return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D}
-                                    
+        dist_inf_C = torch.norm(C-C_l, p=float('inf'))
+        dist_inf_D = torch.norm(D-D_l, p=float('inf'))
+        return {"dist_1_C": dist_1_C, "dist_1_D": dist_1_D, "dist_2_C": dist_2_C, "dist_2_D": dist_2_D, "dist_inf_C": dist_inf_C, "dist_inf_D": dist_inf_D}
+                                
             
 def save_checkpoint(config, model, epoch, opt, loss):
     # make dir time
@@ -110,6 +78,7 @@ def test(config, dataloader, model, test=True):
     model.eval()
     x = dataloader.dataset.x
     model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
+
     with torch.no_grad():
         total_loss = 0
         for i, y in enumerate(dataloader):
@@ -126,7 +95,7 @@ def test(config, dataloader, model, test=True):
                     plt.plot(x[1:], y_hat_exp[j][:-1].numpy(), label="explicit")
                     plt.legend()
                     plt.title(f"Function {i}")
-                    wandb.log({f"function_{i}_{test}": plt}, commit=False)
+                    wandb.log({f"function_{i}_{str(type(dataloader.dataset))}": plt}, commit=False)
 
             if not test:
                 break
@@ -135,7 +104,7 @@ def test(config, dataloader, model, test=True):
         weight_dist = get_weight_dist(model)
         wandb.log(weight_dist, commit=False)
         if test:
-            wandb.log({"test_loss": total_loss}, commit=False)
+            wandb.log({f"loss_{str(type(dataloader.dataset))}": total_loss}, commit=False)
 
     model.train()
 
@@ -163,22 +132,19 @@ def log_model(model,test=False):
     plt.close("all")
 
 
-<<<<<<< HEAD
-=======
-
->>>>>>> 2076baf1cfb3962d38a3114ed9b7c46ce3dc53de
 
 def train(config):
     dataset = get_datasets(config=config, test=False)
-    dataset_test = get_datasets(config=config, test=True)
-
+    print("wehfbjn")
+    dataset_tests = get_datasets(config=config, test=True)
+    print(dataset_tests)
     
-    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, init_opt=config["train"]["init_opt"], basis_learnable=config["train"]["basis_learnable"])
+    model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, init_opt=config["train"]["init_opt"], basis_learnable=config["train"]["basis_learnable"], init_opt_AB=config["train"]["init_opt_AB"])
     model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
     
-
+    dataloaders_test = [DataLoader(dataset_test, batch_size=config["train"]["batch_size"], shuffle=False, num_workers=1) for dataset_test in dataset_tests]
     dataloader_train = DataLoader(dataset, batch_size=config["train"]["batch_size"], shuffle=True)
-    dataloader_test = DataLoader(dataset_test, batch_size=config["train"]["batch_size"], shuffle=False)
+    print("wehfbjn")
     
     opt = select_optim(config, model)
     
@@ -195,26 +161,26 @@ def train(config):
 
     if config["load_from_checkpoint"]:
         load_checkpoint(config, model, opt)
-
+    print("ghjkb.")
     for epoch in range(config["train"]["epochs"]):
         epoch_loss = 0
 
         if epoch % config["train"]["eval_every"] == 0:
             log_model(model)
-            test(config, dataloader_test, model)
-            test(config, dataloader_train, model, test=False)
+            for dataloader_test in dataloaders_test:
+                test(config, dataloader_test, model)
+                print("hbjnk")
 
         if epoch % config["train"]["save_every"] == 0:
             save_checkpoint(config, model, epoch, opt, epoch_loss)
-        
+        print("ghjkb.")
 
         for i, y in enumerate(dataloader_train):
-            
             opt.zero_grad()
             y_hat = model(y) # signal y is 0,1,2,3,4,5..., N / y_hat is 1,2,3,4,5,6..., N+1
-            loss = torch.nn.MSELoss()(y_hat[:,9000:-1].flatten(), y[:,9000+1:].flatten())
+            loss = torch.nn.L1Loss()(y_hat[:,0:-1].flatten(), y[:,0+1:].flatten())
 
-            if epoch>0:
+            if epoch!=0:
                 loss.backward()
                 opt.step()
 

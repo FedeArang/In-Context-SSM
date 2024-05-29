@@ -2,28 +2,36 @@ from torch.utils.data import Dataset
 import torch
 import numpy as np
 import nengo
+from scipy.integrate import solve_ivp
 import random
 
 def get_datasets(config: dict, test: bool):
     if test:
-        if config["test"]["data"]["dataset"] == "PolyDataset":
-            return PolyDataset(degree=config["test"]["data"]["degree"], num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
-        elif config["test"]["data"]["dataset"] == "WhiteSignalDataset":
-            return WhiteSignalDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
-        elif config["test"]["data"]["dataset"] == "BrownianMotionDataset":
-            return BrownianMotionDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], mu=config["test"]["data"]["mu"], sigma=config["test"]["data"]["sigma"], dt=config["test"]["data"]["dt"], device=config["device"], test=True)
-        elif config["test"]["data"]["dataset"] == "SineDataset":
-            return SineDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
-        elif config["test"]["data"]["dataset"] == "MultipleSineDataset":
-            return MultipleSineDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], max_frequency=config["test"]["data"]["max_frequency"], num_summands=config["test"]["data"]["num_summands"], device=config["device"], test=True)
-        elif config["test"]["data"]["dataset"] == "LinearDataset":
-            return LinearDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
-        elif config["test"]["data"]["dataset"] == "LegendreDataset":
-            return LegendreDataset(degree=config["test"]["data"]["degree"], num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True)
-        elif config["test"]["data"]["dataset"] == "MixedDataset":
-            return MixedDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], config=config, device=config["device"], test=True)
-        else:
-            raise ValueError("Unknown dataset")
+        datasets = []
+        for key in config["test"]["data"]["dataset"]:
+            if key == "PolyDataset":
+                datasets.append(PolyDataset(degree=config["test"]["data"]["degree"], num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True))
+            elif key == "WhiteSignalDataset":
+                datasets.append(WhiteSignalDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True))
+            elif key == "BrownianMotionDataset":
+                datasets.append(BrownianMotionDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], mu=config["test"]["data"]["mu"], sigma=config["test"]["data"]["sigma"], dt=config["test"]["data"]["dt"], device=config["device"], test=True))
+            elif key == "SineDataset":
+                datasets.append(SineDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True))
+            elif key == "MultipleSineDataset":
+                datasets.append(MultipleSineDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], max_frequency=config["test"]["data"]["max_frequency"], num_summands=config["test"]["data"]["num_summands"], device=config["device"], test=True))
+            elif key == "LinearDataset":
+                datasets.append(LinearDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True))
+            elif key == "LegendreDataset":
+                datasets.append(LegendreDataset(degree=config["test"]["data"]["degree"], num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True))
+            elif key == "MixedDataset":
+                datasets.append(MixedDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], config=config, device=config["device"], test=True))
+            elif key == "VanDerPoolDataset":
+                datasets.append(VanDerPoolDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True))
+            elif key == "FilteredNoiseDataset":
+                datasets.append(FilteredNoiseDataset(num_points=config["test"]["data"]["num_points"], num_functions=config["test"]["data"]["num_functions"], device=config["device"], test=True))
+            else:
+                raise ValueError("Unknown dataset")
+        return datasets
     else:
         if config["train"]["data"]["dataset"] == "PolyDataset":
             return PolyDataset(degree=config["train"]["data"]["degree"], num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
@@ -41,8 +49,13 @@ def get_datasets(config: dict, test: bool):
             return LegendreDataset(degree=config["train"]["data"]["degree"], num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], device=config["device"])
         elif config["train"]["data"]["dataset"] == "MixedDataset":
             return MixedDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], config=config, device=config["device"])
+        elif config["train"]["data"]["dataset"] == "VanDerPoolDataset":
+            return VanDerPoolDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], t_span=config["train"]["data"]["t_span"], x0=config["train"]["data"]["x0"], mu=config["train"]["data"]["mu"], device=config["device"])
+        elif config["train"]["data"]["dataset"] == "FilteredNoiseDataset":
+            return FilteredNoiseDataset(num_points=config["train"]["data"]["num_points"], num_functions=config["train"]["data"]["num_functions"], alpha=config["train"]["data"]["alpha"], device=config["device"])
         else:
             raise ValueError("Unknown dataset")
+        
         
 
 class PolyDataset(Dataset):
@@ -245,18 +258,14 @@ class MixedDataset(Dataset):
         self.white_ds = WhiteSignalDataset(**dataconfig, device=device, test=test)
         self.legend_ds = LegendreDataset(**dataconfig, device=device, test=test)
 
-<<<<<<< HEAD
-        self.dist = [0.20, 0.05, 0.10, 0.55]
-=======
-        self.dist = [0.25, 0.05, 0.10, 0.50]
->>>>>>> 2076baf1cfb3962d38a3114ed9b7c46ce3dc53de
+        self.dist = [0.33333, 0.0, 0.33333, 0.33334]
 
     def __len__(self):
         return self.num_functions
     
     def __getitem__(self, index):
         # sample from dist
-        r = random.random()
+        r = float(index) / float(self.num_functions)
 
         if r < self.dist[0]:
             return self.sine_ds[index]
@@ -266,3 +275,50 @@ class MixedDataset(Dataset):
             return self.white_ds[index]
         else:
             return self.legend_ds[index]
+        
+def van_der_pol_oscillator(t, x, mu):
+        return mu * (1 - x**2) * np.sin(t)
+
+class VanDerPoolDataset(Dataset):
+    def __init__(self, num_points: int, num_functions: int, t_span: int = 20, x0: float = 0.5, mu: float = 7.0 , device: str = "cpu", test: bool = False, **kwargs):
+        self.num_points = num_points
+        self.num_functions = num_functions
+        self.device = device
+        self.test = test
+        self.x = torch.linspace(0, t_span, num_points)
+        self.mu = mu
+        self.x0 = x0
+        self.t_span = t_span
+
+    def __len__(self):
+        return 1
+
+    def __getitem__(self, index):
+        solution = solve_ivp(van_der_pol_oscillator, (0,self.t_span), [self.x0], args=(self.mu,), t_eval=self.x, method='RK45')
+        return torch.tensor(solution.y)[0].to(torch.float32).to(self.device)
+    
+
+class FilteredNoiseDataset(Dataset):
+    def __init__(self, num_points: int, num_functions: int, alpha: float = 0.1, device: str = "cpu", test: bool = False, **kwargs):
+        self.num_points = num_points
+        self.num_functions = num_functions
+        self.device = device
+        self.test = test
+        self.x = torch.linspace(0, 1, num_points)
+        self.alpha = alpha
+        self.rng = np.random.RandomState(seed=1)
+        self.process = nengo.processes.FilteredNoise(synapse=nengo.synapses.Alpha(self.alpha))
+
+        ## pregenerate the data
+        self.data = torch.zeros((self.num_functions, self.num_points))
+        for i in range(self.num_functions):
+            self.data[i,:] = torch.tensor(self.process.run_steps(self.num_points, rng=self.rng)[:,0])
+        self.data.to(torch.float32)
+
+        print(self.data[0])
+    def __len__(self):
+        return self.num_functions
+
+    def __getitem__(self, index):
+        return self.data[index]
+    

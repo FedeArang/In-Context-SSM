@@ -31,7 +31,7 @@ Each method comprises an exact recurrence c_k = A_k c_{k-1} + B_k f_k, and an ex
 """
 
 class HiPPO_LegT(nn.Module):
-    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False, teacher_ratio: float = 1.0, device: str = "cpu", init_opt: bool = False, basis_learnable: bool = False):
+    def __init__(self, N, dt=1.0, discretization='bilinear', trainable=False, teacher_ratio: float = 1.0, device: str = "cpu", init_opt: bool = False, basis_learnable: bool = False, init_opt_AB: bool = False):
         """
         N: the order of the HiPPO projection
         dt: discretization step size - should be roughly inverse to the length of the sequence
@@ -45,7 +45,7 @@ class HiPPO_LegT(nn.Module):
         A, B = transition('legt', N)
 
         if trainable:
-            if init_opt == "opt":
+            if init_opt:
                 Q = np.arange(N, dtype=np.float64)
                 evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
                 evals = np.reshape(evals, (self.N, ))
@@ -61,37 +61,11 @@ class HiPPO_LegT(nn.Module):
 
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C_discr).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D_discr).requires_grad_())
-
-            elif init_opt == "zero":
-                C = np.random.randn(N)
-                D = np.random.randn(1)
+            else:
+                C = np.zeros((N))
+                D = np.ones((1,))
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
-
-            elif init_opt == "mean":
-                Q = np.arange(N, dtype=np.float64)
-                evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
-                evals = np.reshape(evals, (self.N, ))
-
-                C = np.dot(evals, A)
-                D = np.sum(evals*B.squeeze(-1)).reshape(1,)
-
-                self.C = torch.Tensor(np.reshape(C, (N, )))
-                self.D = torch.Tensor(np.reshape(D, (1,)))
-
-                C_discr = 1/(1-0.5*self.D*self.dt)*0.5*dt*self.C
-                D_discr = 1/(1-0.5*self.D*self.dt)*(1+0.5*dt*self.D)
-
-                C_mean = torch.mean(C_discr).item()
-                D_mean = torch.mean(D_discr).item()
-                C_std = torch.std(C_discr).item()
-
-                C = np.random.randn(N) * C_std + C_mean
-                D = np.random.randn(1) + D_mean
-
-                self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
-                self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
-
         else:
             Q = np.arange(N, dtype=np.float64)
             evals = (2*Q + 1)** .5  #The Lengendre Polinomyals satisfy P_n(1) = 1 for all n
@@ -103,21 +77,26 @@ class HiPPO_LegT(nn.Module):
             self.C = torch.Tensor(np.reshape(C, (N, )))
             self.D = torch.Tensor(np.reshape(D, (1,)))
 
-            self.C_discr = 1/(1-0.5*self.D*self.dt)*0.5*dt*self.C
-            self.D_discr = 1/(1-0.5*self.D*self.dt)*(1+0.5*dt*self.D)
-
-
+            self.C_discr = 1/(1-0.5*self.D*self.dt) * 0.5 * dt * self.C
+            self.D_discr = 1/(1-0.5*self.D*self.dt) * (1 + 0.5 * dt * self.D)
 
         # dt, discretization options
         A, B, _,_, _ = signal.cont2discrete((A, B, C, D), dt=dt, method=discretization)
-        
-
 
         B = B.squeeze(-1)
 
         if self.basis_learnable:
-            self.A = torch.nn.Parameter(torch.Tensor(A).requires_grad_())
-            self.B = torch.nn.Parameter(torch.Tensor(B).requires_grad_())
+            if init_opt_AB:
+                print("init_opt_AB")
+                self.A = torch.nn.Parameter(torch.Tensor(A).requires_grad_())
+                self.B = torch.nn.Parameter(torch.Tensor(B).requires_grad_())
+            else: 
+                A_init = torch.zeros((N,N))
+                B_init = torch.zeros(N)
+                torch.nn.init.normal_(torch.Tensor(A_init)).to(torch.float32)
+                torch.nn.init.normal_(torch.Tensor(B_init)).to(torch.float32)
+                self.A = torch.nn.Parameter(A_init)
+                self.B = torch.nn.Parameter(B_init)
         else:
             self.register_buffer('A', torch.Tensor(A)) # (N, N)
             self.register_buffer('B', torch.Tensor(B)) # (N,)
