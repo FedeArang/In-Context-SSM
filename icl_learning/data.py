@@ -197,9 +197,9 @@ class LinearDataset(Dataset):
     
     def __getitem__(self, index):
         # sample an offset and a slope
-        offset = np.random.uniform(-1,1) * 1000
-        slope = np.random.uniform(-1,1) * 1000
-        y = offset + slope*self.x
+        offset = np.random.uniform(-1,1) * 10
+        slope = np.random.uniform(-1,1) * 10
+        y = offset + slope * self.x
         return torch.tensor(y).to(torch.float32).to(self.device)
         
 
@@ -245,7 +245,7 @@ class MixedDataset(Dataset):
         self.white_ds = WhiteSignalDataset(**dataconfig, device=device, test=test)
         self.legend_ds = LegendreDataset(**dataconfig, device=device, test=test)
 
-        self.dist = [0.30, 0.05, 0.10, 0.45]
+        self.dist = [0.20, 0.05, 0.10, 0.55]
 
     def __len__(self):
         return self.num_functions

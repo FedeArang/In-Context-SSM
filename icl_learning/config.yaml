@@ -4,7 +4,7 @@ checkpoint_path: "checkpoints/2024_05_26_19_15_18/checkpoint_250.pt"
 save_dir: "checkpoints"
 
 train:
-  batch_size: 256
+  batch_size: 128
   epochs: 5000
   eval_every: 1
   teacher_ratio: 1
@@ -12,7 +12,7 @@ train:
   init_opt: False
   basis_learnable: False
   data:
-    dataset: "MixedDataset"
+    dataset: "LinearDataset"
     degree: 60
     num_functions: 1000
     num_summands: 20
@@ -29,10 +29,11 @@ train:
 
 optimizer:
   type: "adam"
-  lr: 0.005
+  lr: 0.001
+  weight_decay: 0.0
 
 model:
-  rank: 16
+  rank: 32
   full: False
 
 test:

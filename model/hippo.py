@@ -63,8 +63,8 @@ class HiPPO_LegT(nn.Module):
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D_discr).requires_grad_())
 
             else:
-                C = np.random.randn(N)
-                D = np.random.randn(1)
+                C = np.zeros((N))
+                D = np.ones((1,))
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
 
@@ -282,7 +282,7 @@ class HiPPO_FouT(nn.Module):
         A, B = transition('fout', N)
 
         if trainable:
-            C = np.ones((N,))
+            C = np.zeros((N,))
             D = np.zeros((1,))
             self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
             self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())

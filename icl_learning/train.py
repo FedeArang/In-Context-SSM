@@ -11,6 +11,8 @@ from .config import load_configs
 import random
 import numpy as np
 
+
+
 def set_seeds(seed):
     random.seed(seed)
     np.random.seed(seed)
@@ -101,6 +103,7 @@ def load_checkpoint(config, model, opt):
     model.load_state_dict(checkpoint['model_state_dict']) 
     opt.load_state_dict(checkpoint['optimizer_state_dict'])
     
+    
 
 @autoregressive
 def test(config, dataloader, model, test=True):
@@ -136,6 +139,30 @@ def test(config, dataloader, model, test=True):
 
     model.train()
 
+def log_model(model,test=False):
+    C_discr = model.C_discr
+    D_discr = model.D_discr
+
+    # now log this to wandb as a plot
+    cax_c=plt.matshow(C_discr[None,:].detach().numpy())
+    cax_c.get_figure().colorbar(cax_c)
+
+    if test:
+        wandb.log({"C_discr_test": wandb.Image(cax_c.get_figure())}, commit=False)
+    else:
+        wandb.log({"C_discr": wandb.Image(cax_c.get_figure())}, commit=False)
+
+    cax_d=plt.matshow(D_discr[None,None,:].detach().numpy())
+    cax_d.get_figure().colorbar(cax_d)
+
+    if test:
+        wandb.log({"D_discr_test": wandb.Image(cax_d.get_figure())}, commit=False)
+    else:
+        wandb.log({"D_discr": wandb.Image(cax_d.get_figure())}, commit=False)
+
+    plt.close("all")
+
+
 
 def train(config):
     dataset = get_datasets(config=config, test=False)
@@ -143,6 +170,8 @@ def train(config):
 
     
     model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, init_opt=config["train"]["init_opt"], basis_learnable=config["train"]["basis_learnable"])
+    model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
+    
 
     dataloader_train = DataLoader(dataset, batch_size=config["train"]["batch_size"], shuffle=True)
     dataloader_test = DataLoader(dataset_test, batch_size=config["train"]["batch_size"], shuffle=False)
@@ -157,6 +186,8 @@ def train(config):
     
     wandb.watch(model, log_freq=1, log="all")
 
+    log_model(model_test, test=True)
+    log_model(model)
 
     if config["load_from_checkpoint"]:
         load_checkpoint(config, model, opt)
@@ -165,18 +196,23 @@ def train(config):
         epoch_loss = 0
 
         if epoch % config["train"]["eval_every"] == 0:
+            log_model(model)
             test(config, dataloader_test, model)
             test(config, dataloader_train, model, test=False)
 
         if epoch % config["train"]["save_every"] == 0:
             save_checkpoint(config, model, epoch, opt, epoch_loss)
+        
 
         for i, y in enumerate(dataloader_train):
+            
             opt.zero_grad()
             y_hat = model(y) # signal y is 0,1,2,3,4,5..., N / y_hat is 1,2,3,4,5,6..., N+1
-            loss = torch.nn.L1Loss()(y_hat[:,:-1].flatten(), y[:,1:].flatten())
-            loss.backward()
-            opt.step()
+            loss = torch.nn.MSELoss()(y_hat[:,9000:-1].flatten(), y[:,9000+1:].flatten())
+
+            if epoch>0:
+                loss.backward()
+                opt.step()
 
             epoch_loss += loss.item()
 
@@ -187,7 +223,7 @@ def train(config):
 
 if __name__=="__main__":
     for i in range(5):
-        seed = 45 + i
+        seed = 42 + i
         set_seeds(seed)
         config = load_configs()
         config["seed"] = seed
