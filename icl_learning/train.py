@@ -135,16 +135,13 @@ def log_model(model,test=False):
 
 def train(config):
     dataset = get_datasets(config=config, test=False)
-    print("wehfbjn")
     dataset_tests = get_datasets(config=config, test=True)
-    print(dataset_tests)
     
     model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, init_opt=config["train"]["init_opt"], basis_learnable=config["train"]["basis_learnable"], init_opt_AB=config["train"]["init_opt_AB"])
     model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
     
     dataloaders_test = [DataLoader(dataset_test, batch_size=config["train"]["batch_size"], shuffle=False, num_workers=1) for dataset_test in dataset_tests]
     dataloader_train = DataLoader(dataset, batch_size=config["train"]["batch_size"], shuffle=True)
-    print("wehfbjn")
     
     opt = select_optim(config, model)
     
@@ -161,7 +158,6 @@ def train(config):
 
     if config["load_from_checkpoint"]:
         load_checkpoint(config, model, opt)
-    print("ghjkb.")
     for epoch in range(config["train"]["epochs"]):
         epoch_loss = 0
 
@@ -169,11 +165,9 @@ def train(config):
             log_model(model)
             for dataloader_test in dataloaders_test:
                 test(config, dataloader_test, model)
-                print("hbjnk")
 
         if epoch % config["train"]["save_every"] == 0:
             save_checkpoint(config, model, epoch, opt, epoch_loss)
-        print("ghjkb.")
 
         for i, y in enumerate(dataloader_train):
             opt.zero_grad()

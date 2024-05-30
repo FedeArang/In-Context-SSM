@@ -316,6 +316,7 @@ class FilteredNoiseDataset(Dataset):
         self.data.to(torch.float32)
 
         print(self.data[0])
+        
     def __len__(self):
         return self.num_functions
 
