@@ -1,6 +1,8 @@
 import torch
 from .data import PolyDataset, WhiteSignalDataset, get_datasets
 from model.hippo import HiPPO_LegT
+from model.hippo import HiPPO_FouT
+from model.hippo import HiPPO_LegS
 import yaml
 import torch
 from torch.utils.data import DataLoader
@@ -34,10 +36,19 @@ def autoregressive(func):
     return wrapper
 
 
+<<<<<<< Updated upstream
 def get_weight_dist(model: HiPPO_LegT):
     with torch.no_grad():
         model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
     
+=======
+
+
+def get_weight_dist(model: HiPPO_LegT|HiPPO_LegS|HiPPO_FouT):
+    with torch.no_grad():
+        model_test = HiPPO_LegS(N=model.N, dt=model.dt, trainable=False)
+        
+>>>>>>> Stashed changes
 
         C, D = model.C_discr.clone().detach(), model.D_discr.clone().detach()
         C_l, D_l = model_test.C_discr, model_test.D_discr
@@ -77,8 +88,13 @@ def load_checkpoint(config, model, opt):
 def test(config, dataloader, model, test=True):
     model.eval()
     x = dataloader.dataset.x
+<<<<<<< Updated upstream
     model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
 
+=======
+    #model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
+    model_test = HiPPO_LegS(N=model.N, dt=model.dt, trainable=False)
+>>>>>>> Stashed changes
     with torch.no_grad():
         total_loss = 0
         for i, y in enumerate(dataloader):
@@ -139,10 +155,16 @@ def train(config):
     dataset_tests = get_datasets(config=config, test=True)
     print(dataset_tests)
     
+<<<<<<< Updated upstream
     model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, init_opt=config["train"]["init_opt"], basis_learnable=config["train"]["basis_learnable"], init_opt_AB=config["train"]["init_opt_AB"])
     model_test = HiPPO_LegT(N=model.N, dt=model.dt, trainable=False)
     
     dataloaders_test = [DataLoader(dataset_test, batch_size=config["train"]["batch_size"], shuffle=False, num_workers=1) for dataset_test in dataset_tests]
+=======
+    #model = HiPPO_LegT(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], teacher_ratio=config["train"]["teacher_ratio"], trainable=True, init_opt=config["train"]["init_opt"], basis_learnable=config["train"]["basis_learnable"])
+    model = HiPPO_LegS(N=config["model"]["rank"], dt=1/config["train"]["data"]["num_points"], trainable=True, init_opt=config["train"]["init_opt"], basis_learnable=config["train"]["basis_learnable"])
+
+>>>>>>> Stashed changes
     dataloader_train = DataLoader(dataset, batch_size=config["train"]["batch_size"], shuffle=True)
     print("wehfbjn")
     
@@ -152,12 +174,17 @@ def train(config):
         entity="incontextssm",
         project="incontextssm",
                 config=config,
+<<<<<<< Updated upstream
                 name="HiPPO_LegT")
     
     wandb.watch(model, log_freq=1, log="all")
 
     log_model(model_test, test=True)
     log_model(model)
+=======
+                name="HiPPO_LegS")
+    wandb.watch(model)
+>>>>>>> Stashed changes
 
     if config["load_from_checkpoint"]:
         load_checkpoint(config, model, opt)
@@ -178,11 +205,17 @@ def train(config):
         for i, y in enumerate(dataloader_train):
             opt.zero_grad()
             y_hat = model(y) # signal y is 0,1,2,3,4,5..., N / y_hat is 1,2,3,4,5,6..., N+1
+<<<<<<< Updated upstream
             loss = torch.nn.L1Loss()(y_hat[:,5000:-1].flatten(), y[:,5000+1:].flatten())
 
             if epoch!=0:
                 loss.backward()
                 opt.step()
+=======
+            loss = torch.nn.L1Loss()(y_hat[:,:-1].flatten(), y[:,1:].flatten())
+            loss.backward()
+            opt.step()
+>>>>>>> Stashed changes
 
             epoch_loss += loss.item()
 
@@ -193,8 +226,13 @@ def train(config):
 
 if __name__=="__main__":
     for i in range(5):
+<<<<<<< Updated upstream
         seed = 42 + i
         set_seeds(seed)
+=======
+        seed = 87 + i
+        set_seeds(69)
+>>>>>>> Stashed changes
         config = load_configs()
         config["seed"] = seed
         train(config)

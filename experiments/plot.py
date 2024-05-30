@@ -10,7 +10,7 @@ from model.hippo import HiPPO_LegS
 from model.hippo import HiPPO_FouT
 
 
-def plot(test_data, config):
+def plot(test_data, config, return_losses=False):
     
     N = config['N']
     T = config['T']
@@ -39,9 +39,9 @@ def plot(test_data, config):
     f_fout = fout(f)
     f_fout = torch.reshape(f_fout, (T, ))
 
-    print(F.mse_loss(f[1::], f_legt[0:-1]))
-    print(F.mse_loss(f[1::], f_legs[0:-1]))
-    print(F.mse_loss(f[1::], f_fout[0:-1]))
+    #print(F.mse_loss(f[1::], f_legt[0:-1]))
+    #print(F.mse_loss(f[1::], f_legs[0:-1]))
+    #print(F.mse_loss(f[1::], f_fout[0:-1]))
 
     vals = np.linspace(0.0, 1.0, T)
     plt.figure(figsize=(6, 2))
@@ -55,3 +55,9 @@ def plot(test_data, config):
     plt.savefig(f'{filename}', bbox_inches='tight')
     # plt.show()
     plt.close()
+
+    #plt.plot(vals[1::], torch.abs(f[1::]-f_legt[0:-1]))
+    #plt.show()
+
+    if return_losses:
+        return F.mse_loss(f[1::], f_legt[0:-1]), F.mse_loss(f[1::], f_legs[0:-1]), F.mse_loss(f[1::], f_fout[0:-1])

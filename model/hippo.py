@@ -292,7 +292,7 @@ class HiPPO_FouT(nn.Module):
         else:
             C=np.zeros(N)
             for i in range(int((N-1)/2)):
-                C[2*i+2]=-2*np.pi*(i+1)
+                C[2*i+2]=-2*np.sqrt(2)*np.pi*(i+1)
             
             D=np.ones((1,))
 
@@ -306,8 +306,8 @@ class HiPPO_FouT(nn.Module):
         self.register_buffer('B', torch.Tensor(B)) # (N,)
 
         # vals = np.linspace(0.0, 1.0, 1./dt)
-        vals = np.arange(0.0, 1.0, dt)
-        self.eval_matrix = torch.Tensor(ss.eval_legendre(np.arange(N)[:, None], 1 - 2 * vals).T)
+        #vals = np.arange(0.0, 1.0, dt)
+        #self.eval_matrix = torch.Tensor(ss.eval_legendre(np.arange(N)[:, None], 1 - 2 * vals).T)
 
     '''def forward(self, inputs):
         """
@@ -352,18 +352,23 @@ class HiPPO_FouT(nn.Module):
 
         c = torch.zeros(u.shape[-1]).to(torch.float32)
 
-        cs = []
+        #cs = []
         next_step_pred = torch.zeros_like(inputs)
     
         steps_teacherforcing = range(int(inputs.shape[0] * self.teacher_ratio))
         
         for i in steps_teacherforcing:
             c = F.linear(c, self.A) + self.B * inputs[i]
-            if len(cs)==0:
+            if i==0:
                 pred = torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
             else:
+<<<<<<< Updated upstream
                 pred = 2 * torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
             cs.append(c)
+=======
+                pred = torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
+            #cs.append(c)
+>>>>>>> Stashed changes
             next_step_pred[i]=pred
 
         return next_step_pred
