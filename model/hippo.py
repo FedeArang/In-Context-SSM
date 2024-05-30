@@ -364,13 +364,8 @@ class HiPPO_FouT(nn.Module):
             if i==0:
                 pred = torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
             else:
-<<<<<<< Updated upstream
-                pred = 2 * torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
-            cs.append(c)
-=======
                 pred = torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
             #cs.append(c)
->>>>>>> Stashed changes
             next_step_pred[i]=pred
 
         return next_step_pred

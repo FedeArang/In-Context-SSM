@@ -5,13 +5,13 @@ save_dir: "checkpoints"
 
 train:
   batch_size: 128
-  epochs: 2000
+  epochs: 1000
   eval_every: 20
   teacher_ratio: 1.0
   save_every: 20
-  init_opt: False
+  init_opt: True
   init_opt_AB: True
-  basis_learnable: False
+  basis_learnable: True
   data:
     dataset: "MixedDataset"
     degree: 15
