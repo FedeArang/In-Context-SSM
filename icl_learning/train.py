@@ -84,7 +84,7 @@ def test(config, dataloader, model, test=True):
         for i, y in enumerate(dataloader):
             y_hat = model(y) # Now y is the signal 1,2,3,4,5,N+1, and y is 0,1,2,3,4,5..., N
             y_hat_exp = model_test(y)
-            loss = torch.nn.L1Loss()(y_hat[:,:-1], y[:,1:])
+            loss = torch.nn.L1Loss()(y_hat[:,5000:-1], y[:,5000+1:])
             total_loss += loss.item()
             # make plots of the predictions and the ground truth and log them to wandb
             if i==0:
@@ -178,7 +178,7 @@ def train(config):
         for i, y in enumerate(dataloader_train):
             opt.zero_grad()
             y_hat = model(y) # signal y is 0,1,2,3,4,5..., N / y_hat is 1,2,3,4,5,6..., N+1
-            loss = torch.nn.L1Loss()(y_hat[:,0:-1].flatten(), y[:,0+1:].flatten())
+            loss = torch.nn.L1Loss()(y_hat[:,5000:-1].flatten(), y[:,5000+1:].flatten())
 
             if epoch!=0:
                 loss.backward()

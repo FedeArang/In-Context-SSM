@@ -62,8 +62,8 @@ class HiPPO_LegT(nn.Module):
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C_discr).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D_discr).requires_grad_())
             else:
-                C = np.zeros((N))
-                D = np.ones((1,))
+                C = np.zeros((N,))
+                D = np.zeros((1,))
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
         else:
@@ -87,7 +87,6 @@ class HiPPO_LegT(nn.Module):
 
         if self.basis_learnable:
             if init_opt_AB:
-                print("init_opt_AB")
                 self.A = torch.nn.Parameter(torch.Tensor(A).requires_grad_())
                 self.B = torch.nn.Parameter(torch.Tensor(B).requires_grad_())
             else: 
@@ -363,7 +362,7 @@ class HiPPO_FouT(nn.Module):
             if len(cs)==0:
                 pred = torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
             else:
-                pred = torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
+                pred = 2 * torch.dot(c, self.C_discr) + self.D_discr * inputs[i]
             cs.append(c)
             next_step_pred[i]=pred
 
