@@ -62,8 +62,10 @@ class HiPPO_LegT(nn.Module):
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C_discr).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D_discr).requires_grad_())
             else:
-                C = np.zeros((N,))
-                D = np.zeros((1,))
+                C = np.random.randn((N))
+                D = np.random.randn((1))
+                
+
                 self.C_discr = torch.nn.Parameter(torch.Tensor(C).requires_grad_())
                 self.D_discr = torch.nn.Parameter(torch.Tensor(D).requires_grad_())
         else:
